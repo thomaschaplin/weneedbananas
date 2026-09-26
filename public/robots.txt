@@ -7,6 +7,6 @@ Allow: /privacy
 Allow: /llms.txt
 Allow: /assets/
 Disallow: /*.*.
-Disallow: /list.html
+Disallow: /list
 
 Sitemap: https://weneedbananas.com/sitemap.xml
