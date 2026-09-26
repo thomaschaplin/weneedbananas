@@ -1,0 +1,282 @@
+import { useEffect, useMemo, useState } from 'preact/hooks'
+import { AISLE_BY_ID } from '../lib/aisles'
+import {
+  addItems,
+  allItems,
+  clearAll,
+  finishShop,
+  getAisleOrder,
+  groupByAisle,
+  removeItem,
+  setAisle,
+  setAisleOrder,
+  setDone,
+  setMissing,
+  updateItem,
+  usuals,
+  type Item,
+} from '../lib/doc'
+import type { ParsedItem } from '../lib/parse'
+import { forgetList, getName, rememberList, setName } from '../lib/recent'
+import { buzz, keepAwake } from '../lib/wakelock'
+import { BananaMark } from '../landing/Logo'
+import { AddBar } from './AddBar'
+import { AisleSection } from './AisleSection'
+import { EditForm, type EditActions } from './EditSheet'
+import { MenuContent } from './MenuSheet'
+import { ShareContent } from './ShareSheet'
+import { Sheet } from './Sheet'
+import { SyncBadge, SyncInfo } from './SyncBadge'
+import { Toast, type ToastData } from './Toast'
+import { useList } from './useList'
+
+type SheetKind = null | 'share' | 'menu' | 'sync' | { edit: string }
+
+const modeKey = (slug: string) => `wnb:mode:${slug}`
+
+export function ListApp({ slug }: { slug: string }) {
+  const { ld, version, loaded, status, lastSync, provider, removeLocal } = useList(slug)
+  const [shopMode, setShopMode] = useState(() => {
+    try {
+      return localStorage.getItem(modeKey(slug)) === 'shop'
+    } catch {
+      return false
+    }
+  })
+  const [sheet, setSheet] = useState<SheetKind>(null)
+  const [toast, setToast] = useState<ToastData | null>(null)
+  const [name, setNameState] = useState(getName)
+
+  const items = useMemo(() => allItems(ld), [version])
+  const order = useMemo(() => getAisleOrder(ld), [version])
+  const groups = useMemo(() => groupByAisle(items, order), [items, order])
+  const usual = useMemo(() => usuals(ld), [version])
+  const todo = items.filter((i) => !i.done).length
+  const got = items.length - todo
+
+  const say = (text: string, undo?: boolean) =>
+    setToast({ id: Date.now(), text, undo: undo ? () => ld.undo.undo() : undefined })
+
+  useEffect(() => {
+    if (loaded) rememberList(slug, todo)
+  }, [loaded, todo, slug])
+
+  useEffect(() => {
+    keepAwake(shopMode)
+    provider.current?.setPresence({ name, shopping: shopMode })
+    try {
+      localStorage.setItem(modeKey(slug), shopMode ? 'shop' : 'plan')
+    } catch {
+      /* ignore */
+    }
+    return () => keepAwake(false)
+  }, [shopMode, name, slug])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !(e.target instanceof HTMLInputElement)) {
+        e.preventDefault()
+        if (e.shiftKey) ld.undo.redo()
+        else ld.undo.undo()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [ld])
+
+  const shoppers = Object.values(status.presence)
+    .filter((p) => p.shopping)
+    .map((p) => p.name || 'Someone')
+
+  const onAdd = (parsed: ParsedItem[]) => {
+    const r = addItems(ld, parsed)
+    if (r.added.length + r.merged.length === 1) {
+      if (r.added.length) {
+        const aisle = AISLE_BY_ID[allItems(ld).find((i) => i.name === r.added[0])?.aisle ?? 'other']
+        say(`${r.added[0]} → ${aisle.icon} ${aisle.label}`, true)
+      } else say(`${r.merged[0]}: updated amount`, true)
+    } else {
+      say(`Added ${r.added.length + r.merged.length} items`, true)
+    }
+  }
+
+  const onToggle = (item: Item) => {
+    setDone(ld, item.id, !item.done)
+    if (!item.done) buzz()
+  }
+
+  const editActions: EditActions = {
+    save: (id, patch) => updateItem(ld, id, patch),
+    setAisle: (id, a) => {
+      setAisle(ld, id, a)
+      say(`Moved to ${AISLE_BY_ID[a].label}`, true)
+    },
+    setMissing: (id, m) => {
+      setMissing(ld, id, m)
+      if (m) say("Kept for next time", true)
+    },
+    remove: (id) => {
+      const it = items.find((i) => i.id === id)
+      removeItem(ld, id)
+      say(`Removed ${it?.name ?? 'item'}`, true)
+    },
+  }
+
+  const finish = () => {
+    const n = finishShop(ld)
+    setShopMode(false)
+    say(`Cleared ${n} bought item${n === 1 ? '' : 's'}. Nice shop!`, true)
+  }
+
+  const editing = sheet && typeof sheet === 'object' ? items.find((i) => i.id === sheet.edit) : undefined
+  const progress = items.length ? got / items.length : 0
+
+  return (
+    <div class={`app${shopMode ? ' shop' : ''}`}>
+      <header class="app-header">
+        <a href="/" class="home" aria-label="We Need Bananas home">
+          <BananaMark size={34} />
+        </a>
+        <button type="button" class="slug-btn" onClick={() => setSheet('share')} aria-label={`Share list ${slug}`}>
+          <span class="slug">{slug}</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="share-icon">
+            <path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+          </svg>
+        </button>
+        <button type="button" class="icon-btn" aria-label="List settings" onClick={() => setSheet('menu')}>
+          ⋯
+        </button>
+      </header>
+
+      {shoppers.length > 0 && !shopMode && (
+        <div class="banner" role="status">
+          🛒 <strong>{shoppers.join(' & ')}</strong> {shoppers.length === 1 ? 'is' : 'are'} at the shop. Add anything
+          you need now.
+        </div>
+      )}
+
+      <div class="toolbar">
+        <div class="mode-switch" role="tablist" aria-label="Mode">
+          <button type="button" role="tab" aria-selected={!shopMode} onClick={() => setShopMode(false)}>
+            📝 Plan
+          </button>
+          <button type="button" role="tab" aria-selected={shopMode} onClick={() => setShopMode(true)}>
+            🛒 At the shop
+          </button>
+        </div>
+        <SyncBadge status={status} onClick={() => setSheet('sync')} />
+      </div>
+
+      {shopMode && items.length > 0 && (
+        <div class="progress" aria-label={`${todo} left to get`}>
+          <div class="progress-text">
+            <strong>{todo === 0 ? 'All got!' : `${todo} left`}</strong>
+            <span class="muted">{got} in the trolley</span>
+          </div>
+          <div class="progress-bar">
+            <span style={{ width: `${Math.round(progress * 100)}%` }} />
+          </div>
+        </div>
+      )}
+
+      {!shopMode && usual.length > 0 && (
+        <div class="usuals" aria-label="Your usuals">
+          <span class="usuals-label">Usuals</span>
+          <div class="chips">
+            {usual.map((u) => (
+              <button
+                key={u.name}
+                type="button"
+                class="chip"
+                onClick={() => onAdd([{ name: u.name, qty: null, unit: null, note: null }])}
+              >
+                + {u.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <main class="list">
+        {!loaded ? null : items.length === 0 ? (
+          <Empty onShare={() => setSheet('share')} />
+        ) : (
+          groups.map((g) => (
+            <AisleSection
+              key={g.aisle}
+              group={g}
+              shopMode={shopMode}
+              onToggle={onToggle}
+              onEdit={(it) => setSheet({ edit: it.id })}
+            />
+          ))
+        )}
+
+        {got > 0 && (
+          <div class="finish">
+            <button type="button" class={`btn ${shopMode ? 'btn-primary btn-big' : ''}`} onClick={finish}>
+              {shopMode ? `✓ Done shopping · clear ${got} bought` : `Clear ${got} ticked item${got === 1 ? '' : 's'}`}
+            </button>
+            {shopMode && todo > 0 && (
+              <p class="muted small">The {todo} you didn't get stay on the list for next time.</p>
+            )}
+          </div>
+        )}
+      </main>
+
+      <AddBar ld={ld} version={version} onAdd={onAdd} compact={shopMode} />
+
+      <Sheet open={sheet === 'share'} onClose={() => setSheet(null)} title="Share this list">
+        <ShareContent slug={slug} />
+      </Sheet>
+      <Sheet open={sheet === 'sync'} onClose={() => setSheet(null)} title="Sync">
+        <SyncInfo status={status} lastSync={lastSync} onShare={() => setSheet('share')} />
+      </Sheet>
+      <Sheet open={sheet === 'menu'} onClose={() => setSheet(null)} title="List settings">
+        <MenuContent
+          name={name}
+          onName={(n) => {
+            setName(n)
+            setNameState(n.trim().slice(0, 24))
+          }}
+          order={order}
+          onOrder={(o) => setAisleOrder(ld, o)}
+          itemCount={items.length}
+          onClearAll={() => {
+            clearAll(ld)
+            setSheet(null)
+            say('List cleared', true)
+          }}
+          onRemoveLocal={async () => {
+            await removeLocal()
+            forgetList(slug)
+            location.href = '/'
+          }}
+        />
+      </Sheet>
+      <Sheet open={!!editing} onClose={() => setSheet(null)} title="Edit item">
+        {editing && <EditForm key={editing.id} item={editing} actions={editActions} close={() => setSheet(null)} />}
+      </Sheet>
+
+      <Toast toast={toast} onDone={() => setToast(null)} />
+    </div>
+  )
+}
+
+function Empty({ onShare }: { onShare: () => void }) {
+  return (
+    <div class="empty">
+      <p class="empty-title">Nothing on the list yet</p>
+      <ul>
+        <li>
+          Type things like <code>2 milk</code>, <code>500g mince</code> or <code>bananas x6</code>
+        </li>
+        <li>Paste a recipe's ingredients and each line becomes an item</li>
+        <li>Items sort themselves into aisles for the shop</li>
+      </ul>
+      <button type="button" class="btn" onClick={onShare}>
+        Share the list with your household
+      </button>
+    </div>
+  )
+}

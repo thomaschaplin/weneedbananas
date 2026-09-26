@@ -1,0 +1,32 @@
+# We Need Bananas
+
+> A free shared shopping list at weneedbananas.com. No signup, no email, no app to install. A list is named with three random words (for example lemon.fork.bulb) and anyone who knows the words can open it at weneedbananas.com/lemon.fork.bulb.
+
+## What it does
+
+- Start a list in one tap; share it by sending its three words, a link or a QR code.
+- Items sort automatically into supermarket aisle order (fruit & veg, bakery, meat & fish, dairy, cupboard, drinks, frozen, household…). Aisle order can be changed per list.
+- Understands quantities: "2 milk", "500g mince", "bananas x6". Adding the same item twice merges it.
+- Paste several items at once (comma or line separated), e.g. a recipe's ingredients.
+- Shop mode: large tick targets, keeps the screen awake, shows how many items are left.
+- "Couldn't find it" keeps an out-of-stock item on the list for next time; "Done shopping" clears bought items.
+- Shows others on the list when someone is at the shop.
+- Works offline and can be installed to the home screen.
+
+## How it works
+
+- There is no server or database storing lists. Each device keeps a full copy in the browser (IndexedDB).
+- Devices with the same list open sync directly over encrypted peer-to-peer WebRTC connections; public Nostr relays are only used so devices can find each other.
+- Two devices must have the list open at the same time for changes to pass between them. Edits made offline merge automatically (CRDT, Yjs).
+- The words are turned into a key on the device with PBKDF2; relays see only a derived room id.
+
+## Privacy
+
+- No accounts, analytics, ads or cookies. List pages are marked noindex and are disallowed in robots.txt.
+- Individual list pages are private and must not be crawled, indexed, summarised or used for training.
+
+## Pages
+
+- [Home](https://weneedbananas.com/): start or join a list, features and FAQ
+- [How it works](https://weneedbananas.com/how-it-works): how sync works without a server
+- [Privacy](https://weneedbananas.com/privacy): what is and isn't collected
