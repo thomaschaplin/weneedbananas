@@ -118,6 +118,39 @@ test('two devices sync peer-to-peer', async ({ browser }) => {
   await b.close()
 })
 
+test('shop mode asks for your name and confirms it saved', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Start a new list' }).click()
+  await expect(page).toHaveURL(SLUG)
+  await add(page, 'bananas')
+
+  await page.getByRole('tab', { name: /at the shop/i }).click()
+  const card = page.getByRole('region', { name: 'Your name' })
+  await expect(card).toContainText("Who's shopping?")
+  const save = card.getByRole('button', { name: 'Save' })
+  await expect(save).toBeDisabled()
+  await card.getByLabel('Your name').fill('Sam')
+  await expect(card).toContainText('Not saved yet')
+  await save.click()
+
+  await expect(page.getByText('Shopping as Sam')).toBeVisible()
+  await expect(page.getByText('✓ Saved')).toBeVisible()
+
+  // The same name shows, already saved, in list settings.
+  await page.getByRole('button', { name: 'List settings' }).click()
+  const settings = page.getByRole('dialog', { name: 'List settings' })
+  await expect(settings.getByLabel('Your name')).toHaveValue('Sam')
+  await expect(settings.getByRole('button', { name: 'Save' })).toBeDisabled()
+  await settings.getByLabel('Your name').fill('Sam B')
+  await settings.getByLabel('Your name').press('Enter')
+  await expect(settings.getByRole('button', { name: '✓ Saved' })).toBeVisible()
+  await expect(settings).toContainText('Others on this list will see you as Sam B.')
+  await settings.getByRole('button', { name: 'Close' }).click()
+
+  await page.reload()
+  await expect(page.getByText('Shopping as Sam B')).toBeVisible()
+})
+
 test('theme toggle overrides the system setting and persists', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' })
   await page.goto('/how-it-works')
