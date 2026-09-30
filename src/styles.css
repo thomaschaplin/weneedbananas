@@ -249,6 +249,8 @@ button {
 
 .hero {
   display: grid;
+  /* An auto track grows to the join form's min-content; keep the column at the page width. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 40px;
   align-items: center;
   padding: 24px 0 56px;
@@ -266,11 +268,6 @@ button {
 
   .site-header nav {
     font-size: 0.88rem;
-  }
-
-  /* An auto track grows to the join form's min-content; keep the column at the page width. */
-  .hero {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .lede {
@@ -729,21 +726,15 @@ h1 {
 
 .toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 2px 6px;
   margin: 6px 12px 10px;
 }
 
-@media (max-width: 359px) {
-  /* Not enough room for the mode switch and the sync badge side by side. */
-  .toolbar {
-    flex-wrap: wrap;
-    row-gap: 2px;
-  }
-
-  .toolbar .sync-badge {
-    margin-left: auto;
-  }
+/* Only when the badge doesn't fit beside the mode switch: drop it to the right-hand side of the next line. */
+.toolbar .sync-badge {
+  margin-left: auto;
 }
 
 .mode-switch {

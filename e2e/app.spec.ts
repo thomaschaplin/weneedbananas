@@ -118,15 +118,17 @@ test('two devices sync peer-to-peer', async ({ browser }) => {
   await b.close()
 })
 
-test.describe('narrow phones', () => {
-  test.use({ viewport: { width: 320, height: 640 } })
+for (const width of [320, 360]) {
+  test.describe(`${width}px phones`, () => {
+    test.use({ viewport: { width, height: 640 } })
 
-  for (const path of ['/', '/lemon.fork.bulb']) {
-    test(`${path} does not scroll sideways at 320px`, async ({ page }) => {
-      await page.goto(path)
-      await page.waitForLoadState('networkidle')
-      const width = await page.evaluate(() => document.documentElement.scrollWidth)
-      expect(width).toBe(320)
-    })
-  }
-})
+    for (const path of ['/', '/lemon.fork.bulb']) {
+      test(`${path} does not scroll sideways at ${width}px`, async ({ page }) => {
+        await page.goto(path)
+        await page.waitForLoadState('networkidle')
+        const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+        expect(scrollWidth).toBe(width)
+      })
+    }
+  })
+}
