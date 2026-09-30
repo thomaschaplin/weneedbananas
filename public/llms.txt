@@ -22,7 +22,7 @@
 
 ## Privacy
 
-- No accounts, analytics, ads or cookies. List pages are marked noindex and are disallowed in robots.txt.
+- No accounts, ads or cookies. Cookieless, anonymous visit counts (Vercel Web Analytics and Speed Insights) with list words stripped from URLs. List pages are marked noindex and are disallowed in robots.txt.
 - Individual list pages are private and must not be crawled, indexed, summarised or used for training.
 
 ## Pages
