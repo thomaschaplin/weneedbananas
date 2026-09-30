@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks'
 import { AISLE_BY_ID } from '../lib/aisles'
+import { NameForm } from './NameForm'
 
 export function MenuContent({
   name,
@@ -18,7 +19,6 @@ export function MenuContent({
   onRemoveLocal: () => void
   itemCount: number
 }) {
-  const [draft, setDraft] = useState(name)
   const [confirmRemove, setConfirmRemove] = useState(false)
 
   const move = (i: number, d: -1 | 1) => {
@@ -33,26 +33,10 @@ export function MenuContent({
     <div class="menu">
       <section>
         <h3>Your name</h3>
-        <p class="muted small">Optional. Shown to others on this list when you're at the shop. Stays on this device.</p>
-        <form
-          class="row"
-          onSubmit={(e) => {
-            e.preventDefault()
-            onName(draft)
-          }}
-        >
-          <input
-            type="text"
-            value={draft}
-            maxLength={24}
-            placeholder="e.g. Sam"
-            onInput={(e) => setDraft((e.target as HTMLInputElement).value)}
-            onBlur={() => onName(draft)}
-          />
-          <button type="submit" class="btn">
-            Save
-          </button>
-        </form>
+        <p class="muted small">
+          Optional. Shown to everyone on this list when you're in “At the shop” mode. Stays on this device.
+        </p>
+        <NameForm name={name} onSave={onName} />
       </section>
 
       <section>

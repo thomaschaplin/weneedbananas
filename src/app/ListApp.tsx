@@ -27,6 +27,7 @@ import { EditForm, type EditActions } from './EditSheet'
 import { MenuContent } from './MenuSheet'
 import { ShareContent } from './ShareSheet'
 import { Sheet } from './Sheet'
+import { ShopIdentity } from './ShopIdentity'
 import { SyncBadge, SyncInfo } from './SyncBadge'
 import { Toast, type ToastData } from './Toast'
 import { useList } from './useList'
@@ -54,6 +55,11 @@ export function ListApp({ slug }: { slug: string }) {
   const usual = useMemo(() => usuals(ld), [version])
   const todo = items.filter((i) => !i.done).length
   const got = items.length - todo
+
+  const saveName = (n: string) => {
+    setName(n)
+    setNameState(n.trim().slice(0, 24))
+  }
 
   const say = (text: string, undo?: boolean) =>
     setToast({ id: Date.now(), text, undo: undo ? () => ld.undo.undo() : undefined })
@@ -107,7 +113,10 @@ export function ListApp({ slug }: { slug: string }) {
   }
 
   const editActions: EditActions = {
-    save: (id, patch) => updateItem(ld, id, patch),
+    save: (id, patch) => {
+      updateItem(ld, id, patch)
+      say(`Saved ${patch.name}`, true)
+    },
     setAisle: (id, a) => {
       setAisle(ld, id, a)
       say(`Moved to ${AISLE_BY_ID[a].label}`, true)
@@ -168,6 +177,8 @@ export function ListApp({ slug }: { slug: string }) {
         </div>
         <SyncBadge status={status} onClick={() => setSheet('sync')} />
       </div>
+
+      {shopMode && <ShopIdentity name={name} onName={saveName} />}
 
       {shopMode && items.length > 0 && (
         <div class="progress" aria-label={`${todo} left to get`}>
@@ -237,10 +248,7 @@ export function ListApp({ slug }: { slug: string }) {
       <Sheet open={sheet === 'menu'} onClose={() => setSheet(null)} title="List settings">
         <MenuContent
           name={name}
-          onName={(n) => {
-            setName(n)
-            setNameState(n.trim().slice(0, 24))
-          }}
+          onName={saveName}
           order={order}
           onOrder={(o) => setAisleOrder(ld, o)}
           itemCount={items.length}
