@@ -24,10 +24,10 @@ function sync(a: Y.Doc, b: Y.Doc) {
 describe('list document', () => {
   it('adds items into aisles and merges duplicates', () => {
     const ld = createListDoc()
-    add(ld, 'milk, bananas, 2 milk')
+    add(ld, '6 eggs, bananas, 6 eggs')
     const items = allItems(ld)
     expect(items).toHaveLength(2)
-    expect(items.find((i) => i.key === 'milk')).toMatchObject({ qty: 3, aisle: 'dairy' })
+    expect(items.find((i) => i.key === 'egg')).toMatchObject({ qty: 12, aisle: 'dairy' })
     expect(items.find((i) => i.key === 'banana')?.aisle).toBe('produce')
   })
 

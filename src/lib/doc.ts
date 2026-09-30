@@ -92,7 +92,7 @@ function mergeQty(a: Item, b: ParsedItem): { qty: number | null; unit: string | 
     const qb = b.qty ?? 1
     return { qty: qa + qb, unit: a.unit }
   }
-  // Different units ("2 milk" + "4 pints milk"): trust the newest wording.
+  // Different units ("1 bottle milk" + "2 pints milk"): trust the newest wording.
   return { qty: b.qty, unit: b.unit }
 }
 

@@ -55,7 +55,7 @@ export function HowItWorks() {
         <h2>Built for shopping</h2>
         <ul>
           <li>Items sort into aisle order automatically, and you can reorder the aisles to match your shop.</li>
-          <li>Quantities are understood: "2 milk", "500g mince", "bananas x6". Duplicates merge.</li>
+          <li>Quantities are understood: "2 pints milk", "500g mince", "bananas x6". Duplicates merge.</li>
           <li>Shop mode keeps your screen awake with big tick targets and a count of what's left.</li>
           <li>"Couldn't find it" keeps an item for next time. "Done shopping" clears what you bought.</li>
           <li>Things you buy often come back as one-tap usuals.</li>

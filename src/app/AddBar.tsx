@@ -64,7 +64,7 @@ export function AddBar({
           enterKeyHint="enter"
           autoComplete="off"
           autoCapitalize="sentences"
-          placeholder={compact ? 'Remembered something?' : 'Add… e.g. 2 milk, 500g mince'}
+          placeholder={compact ? 'Remembered something?' : 'Add… e.g. 6 eggs, 500g mince'}
           onInput={(e) => setText((e.target as HTMLInputElement).value)}
           onPaste={(e) => {
             const pasted = e.clipboardData?.getData('text') ?? ''
