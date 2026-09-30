@@ -20,6 +20,7 @@ import type { ParsedItem } from '../lib/parse'
 import { forgetList, getName, rememberList, setName } from '../lib/recent'
 import { buzz, keepAwake } from '../lib/wakelock'
 import { BananaMark } from '../landing/Logo'
+import { ThemeToggle } from '../landing/ThemeToggle'
 import { AddBar } from './AddBar'
 import { AisleSection } from './AisleSection'
 import { EditForm, type EditActions } from './EditSheet'
@@ -143,6 +144,7 @@ export function ListApp({ slug }: { slug: string }) {
             <path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
           </svg>
         </button>
+        <ThemeToggle />
         <button type="button" class="icon-btn" aria-label="List settings" onClick={() => setSheet('menu')}>
           ⋯
         </button>
