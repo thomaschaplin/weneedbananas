@@ -106,9 +106,24 @@ export function Landing() {
 
 function ListPreview() {
   const rows: [string, string, [string, string, boolean][]][] = [
-    ['🥦', 'Fruit & veg', [['Bananas', '6', true], ['Garlic', '', false], ['Spinach', '1 bag', false]]],
+    [
+      '🥦',
+      'Fruit & veg',
+      [
+        ['Bananas', '6', true],
+        ['Garlic', '', false],
+        ['Spinach', '1 bag', false],
+      ],
+    ],
     ['🥖', 'Bakery', [['Sourdough', '', false]]],
-    ['🧀', 'Dairy, eggs & chilled', [['Milk', '2', false], ['Eggs', 'free range', false]]],
+    [
+      '🧀',
+      'Dairy, eggs & chilled',
+      [
+        ['Milk', '2', false],
+        ['Eggs', 'free range', false],
+      ],
+    ],
   ]
   return (
     <figure class="preview" aria-label="Example list sorted by aisle">

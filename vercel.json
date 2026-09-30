@@ -5,9 +5,7 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
-    { "source": "/:slug([A-Za-z]+\\.[A-Za-z]+\\.[A-Za-z]+)", "destination": "/list" }
-  ],
+  "rewrites": [{ "source": "/:slug([A-Za-z]+\\.[A-Za-z]+\\.[A-Za-z]+)", "destination": "/list" }],
   "headers": [
     {
       "source": "/(.*)",
@@ -33,9 +31,7 @@
     },
     {
       "source": "/list(.html)?",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive, nosnippet" }
-      ]
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive, nosnippet" }]
     },
     {
       "source": "/assets/(.*)",

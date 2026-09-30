@@ -45,7 +45,12 @@ export function ItemRow({
         )}
       </button>
       {shopMode && (
-        <button type="button" class="icon-btn more" aria-label={`Options for ${item.name}`} onClick={() => onEdit(item)}>
+        <button
+          type="button"
+          class="icon-btn more"
+          aria-label={`Options for ${item.name}`}
+          onClick={() => onEdit(item)}
+        >
           ⋯
         </button>
       )}

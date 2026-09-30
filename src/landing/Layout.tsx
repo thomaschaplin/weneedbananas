@@ -20,8 +20,8 @@ export function SiteFooter() {
   return (
     <footer class="site-footer">
       <p>
-        <strong>We Need Bananas</strong> is a free shared shopping list. No accounts, no ads, no server that
-        stores your list.
+        <strong>We Need Bananas</strong> is a free shared shopping list. No accounts, no ads, no server that stores your
+        list.
       </p>
       <nav aria-label="Footer">
         <a href="/">Home</a>

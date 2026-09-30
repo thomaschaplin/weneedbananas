@@ -113,7 +113,7 @@ export function ListApp({ slug }: { slug: string }) {
     },
     setMissing: (id, m) => {
       setMissing(ld, id, m)
-      if (m) say("Kept for next time", true)
+      if (m) say('Kept for next time', true)
     },
     remove: (id) => {
       const it = items.find((i) => i.id === id)
