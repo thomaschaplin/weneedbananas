@@ -1,4 +1,5 @@
 import { Page } from './Layout'
+import { SyncDiagram } from './SyncDiagram'
 
 export function HowItWorks() {
   return (
@@ -39,6 +40,10 @@ export function HowItWorks() {
           The list is a CRDT (we use <a href="https://yjs.dev">Yjs</a>). That means two people can edit offline at the
           same time and their changes merge cleanly when they reconnect. Nobody's edits get lost.
         </p>
+
+        <h2>Step by step</h2>
+        <p>Here's everything that happens between two phones, from typing in the words to an item showing up.</p>
+        <SyncDiagram />
 
         <h2>The one trade-off</h2>
         <p>

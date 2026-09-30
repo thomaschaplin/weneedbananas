@@ -652,6 +652,176 @@ h1 {
   margin-bottom: 6px;
 }
 
+/* How-it-works sync diagram (SyncDiagram.tsx). Drawn at a fixed scale and scrolls sideways on phones. */
+.sync-diagram {
+  margin: 28px 0;
+  padding: 18px 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.sd-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sd-scroll svg {
+  display: block;
+  width: 100%;
+  min-width: 660px;
+  height: auto;
+}
+
+.sync-diagram figcaption {
+  padding: 12px 10px 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.sd-swipe {
+  display: none;
+  margin: 0;
+  padding: 0 10px 8px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+@media (max-width: 700px) {
+  .sd-swipe {
+    display: block;
+  }
+}
+
+.sd-t {
+  fill: var(--ink);
+  font-size: 13px;
+}
+
+.sd-m {
+  fill: var(--muted);
+  font-size: 12px;
+}
+
+.sd-b {
+  font-weight: 800;
+}
+
+.sd-sm {
+  font-size: 12px;
+}
+
+.sd-mono,
+.sd-mono-m {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.sd-mono {
+  fill: var(--leaf);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.sd-green {
+  fill: var(--leaf);
+}
+
+.sd-head,
+.sd-band,
+.sd-key,
+.sd-relay {
+  fill: var(--surface-2);
+}
+
+.sd-head {
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+.sd-box {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+.sd-chip {
+  fill: var(--banana);
+}
+
+.sd-chip-t,
+.sd-band-n,
+.sd-on-chip {
+  fill: #2b2200;
+}
+
+.sd-chip-t {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sd-band-n {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.sd-key {
+  stroke: var(--banana-deep);
+  stroke-width: 1.2;
+}
+
+.sd-relay {
+  stroke: var(--muted);
+  stroke-width: 1.2;
+}
+
+.sd-store {
+  fill: var(--leaf-soft);
+  stroke: var(--leaf);
+  stroke-width: 1.2;
+}
+
+.sd-life {
+  stroke: var(--muted);
+  stroke-width: 1.2;
+  stroke-dasharray: 2 5;
+  opacity: 0.6;
+}
+
+.sd-endcap,
+.sd-step,
+.sd-sig {
+  stroke: var(--muted);
+  stroke-width: 1.6;
+  fill: none;
+}
+
+.sd-sig {
+  stroke-dasharray: 6 5;
+}
+
+.sd-p2p {
+  stroke: var(--leaf);
+  stroke-width: 2;
+  fill: none;
+}
+
+.sd-pipe {
+  stroke: var(--leaf);
+  stroke-width: 6;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.sd-ah-m {
+  fill: var(--muted);
+}
+
+.sd-ah-g {
+  fill: var(--leaf);
+}
+
 .error-hint {
   margin: -12px 0 24px;
   font-size: 1.05rem;
