@@ -38,7 +38,7 @@ const app = {
     'Shared shopping list with no signup or email',
     'Lists named with three random words',
     'Automatic sorting by supermarket aisle',
-    'Understands quantities like "2 milk" or "500g mince"',
+    'Understands quantities like "2 pints milk" or "500g mince"',
     'Shop mode with screen wake lock and large tick targets',
     'Works offline',
     'Peer-to-peer sync with no server storing lists',

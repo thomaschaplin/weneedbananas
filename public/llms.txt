@@ -6,7 +6,7 @@
 
 - Start a list in one tap; share it by sending its three words, a link or a QR code.
 - Items sort automatically into supermarket aisle order (fruit & veg, bakery, meat & fish, dairy, cupboard, drinks, frozen, household…). Aisle order can be changed per list.
-- Understands quantities: "2 milk", "500g mince", "bananas x6". Adding the same item twice merges it.
+- Understands quantities: "2 pints milk", "500g mince", "bananas x6". Adding the same item twice merges it.
 - Paste several items at once (comma or line separated), e.g. a recipe's ingredients.
 - Shop mode: large tick targets, keeps the screen awake, shows how many items are left.
 - "Couldn't find it" keeps an out-of-stock item on the list for next time; "Done shopping" clears bought items.

@@ -4,9 +4,9 @@ import { formatQty, itemKey, parseItem, parseMany } from '../src/lib/parse'
 describe('parseItem', () => {
   it.each([
     ['milk', { name: 'milk', qty: null, unit: null, note: null }],
-    ['2 milk', { name: 'milk', qty: 2, unit: null, note: null }],
-    ['2x milk', { name: 'milk', qty: 2, unit: null, note: null }],
-    ['2 x milk', { name: 'milk', qty: 2, unit: null, note: null }],
+    ['6 eggs', { name: 'eggs', qty: 6, unit: null, note: null }],
+    ['6x eggs', { name: 'eggs', qty: 6, unit: null, note: null }],
+    ['6 x eggs', { name: 'eggs', qty: 6, unit: null, note: null }],
     ['500g mince', { name: 'mince', qty: 500, unit: 'g', note: null }],
     ['1.5 kg potatoes', { name: 'potatoes', qty: 1.5, unit: 'kg', note: null }],
     ['3 tins of chopped tomatoes', { name: 'chopped tomatoes', qty: 3, unit: 'tin', note: null }],

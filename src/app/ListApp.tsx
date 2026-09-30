@@ -271,7 +271,7 @@ function Empty({ onShare }: { onShare: () => void }) {
       <p class="empty-title">Nothing on the list yet</p>
       <ul>
         <li>
-          Type things like <code>2 milk</code>, <code>500g mince</code> or <code>bananas x6</code>
+          Type things like <code>2 pints milk</code>, <code>500g mince</code> or <code>bananas x6</code>
         </li>
         <li>Paste a recipe's ingredients and each line becomes an item</li>
         <li>Items sort themselves into aisles for the shop</li>

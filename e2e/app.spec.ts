@@ -54,14 +54,14 @@ test('start a list, add, tick off in shop mode and finish', async ({ page, conte
   await page.getByRole('button', { name: 'Start a new list' }).click()
   await expect(page).toHaveURL(SLUG)
 
-  await add(page, '2 milk, bananas, 500g mince, sourdough')
+  await add(page, '6 eggs, bananas, 500g mince, sourdough')
   await expect(page.getByRole('region', { name: 'Fruit & veg' })).toContainText('bananas')
-  await expect(page.getByRole('region', { name: 'Dairy, eggs & chilled' })).toContainText('milk')
+  await expect(page.getByRole('region', { name: 'Dairy, eggs & chilled' })).toContainText('eggs')
   await expect(page.getByRole('region', { name: 'Meat & fish' })).toContainText('500g')
 
-  // Adding milk again merges instead of duplicating.
-  await add(page, 'milk')
-  await expect(page.getByRole('region', { name: 'Dairy, eggs & chilled' }).locator('.qty')).toHaveText('3')
+  // Adding eggs again merges instead of duplicating.
+  await add(page, '6 eggs')
+  await expect(page.getByRole('region', { name: 'Dairy, eggs & chilled' }).locator('.qty')).toHaveText('12')
 
   // Aisles appear in walking order.
   const aisles = await page.locator('.aisle-label').allTextContents()

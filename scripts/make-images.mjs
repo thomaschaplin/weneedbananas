@@ -40,7 +40,7 @@ await page.setContent(`
   </div>
   <div style="width:330px;background:#fff;border:2px solid #efe4bf;border-radius:28px;padding:22px;box-shadow:0 10px 40px rgba(60,45,0,.12);transform:rotate(2deg)">
     <div style="font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:22px;margin-bottom:14px">lemon.fork.bulb</div>
-    ${['🥦 Bananas|6|1', '🥦 Garlic||0', '🥖 Sourdough||0', '🧀 Milk|2|0', '🧀 Eggs||0']
+    ${['🥦 Bananas|6|1', '🥦 Garlic||0', '🥖 Sourdough||0', '🧀 Milk|2 pints|0', '🧀 Eggs||0']
       .map((r) => {
         const [n, q, d] = r.split('|')
         return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #efe4bf;font-size:22px">

@@ -11,7 +11,7 @@ const FEATURES = [
   {
     icon: '🧮',
     title: 'Understands quantities',
-    text: '"2 milk", "500g mince", "bananas x6". Add milk twice and you get 2 milk, not two lines of milk.',
+    text: '"2 pints milk", "500g mince", "bananas x6". Add 6 eggs twice and you get 12 eggs, not two lines of eggs.',
   },
   {
     icon: '🛒',
@@ -120,7 +120,7 @@ function ListPreview() {
       '🧀',
       'Dairy, eggs & chilled',
       [
-        ['Milk', '2', false],
+        ['Milk', '2 pints', false],
         ['Eggs', 'free range', false],
       ],
     ],

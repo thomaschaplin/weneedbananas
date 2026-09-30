@@ -61,9 +61,9 @@ const UNIT = String.raw`(${Object.keys(UNIT_ALIASES)
   .sort((a, b) => b.length - a.length)
   .join('|')})`
 
-// "500g mince", "2 x milk", "2x milk", "3 tins tomatoes", "2 milk"
+// "500g mince", "2 pints milk", "6 x eggs", "6x eggs", "3 tins tomatoes", "6 eggs"
 const LEADING = new RegExp(String.raw`^${NUM}\s*(?:${UNIT}\b\.?|x\b)?\s*(?:of\s+)?(.+)$`, 'i')
-// "bananas x6", "bananas 6", "mince 500g", "milk x 2"
+// "bananas x6", "bananas 6", "mince 500g", "eggs x 6"
 const TRAILING = new RegExp(String.raw`^(.+?)\s+(?:x\s*)?${NUM}\s*(?:${UNIT}\b\.?)?$`, 'i')
 
 function toNumber(s: string): number {

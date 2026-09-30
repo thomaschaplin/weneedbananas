@@ -35,7 +35,7 @@ export const FAQ: QA[] = [
   },
   {
     q: 'What makes this better than a notes app or a to-do list?',
-    a: 'It is built for the shop. Items sort themselves into aisle order (fruit & veg, bakery, dairy…), so you walk the shop once. "2 milk" and "500g mince" are understood as quantities, duplicates merge instead of piling up, and Shop mode keeps your screen awake with big one-thumb tick targets. You can mark something "couldn\'t find it" so it rolls over to next time, and your household sees when someone is at the shop.',
+    a: 'It is built for the shop. Items sort themselves into aisle order (fruit & veg, bakery, dairy…), so you walk the shop once. "2 pints milk" and "500g mince" are understood as quantities, duplicates merge instead of piling up, and Shop mode keeps your screen awake with big one-thumb tick targets. You can mark something "couldn\'t find it" so it rolls over to next time, and your household sees when someone is at the shop.',
   },
   {
     q: 'Can I add several items at once, like from a recipe?',
