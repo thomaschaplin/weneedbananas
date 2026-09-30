@@ -58,7 +58,11 @@ describe('list document', () => {
     setDone(ld, milk.id, true)
     setMissing(ld, saffron.id, true)
     expect(finishShop(ld)).toBe(1)
-    expect(allItems(ld).map((i) => i.name).sort()).toEqual(['bread', 'saffron'])
+    expect(
+      allItems(ld)
+        .map((i) => i.name)
+        .sort(),
+    ).toEqual(['bread', 'saffron'])
     ld.undo.undo()
     expect(allItems(ld)).toHaveLength(3)
   })
@@ -100,7 +104,10 @@ describe('list document', () => {
     setMissing(a, eggsA.id, false)
 
     sync(a.doc, b.doc)
-    const names = (ld: typeof a) => allItems(ld).map((i) => `${i.name}:${i.done}`).sort()
+    const names = (ld: typeof a) =>
+      allItems(ld)
+        .map((i) => `${i.name}:${i.done}`)
+        .sort()
     expect(names(a)).toEqual(names(b))
     expect(names(a)).toEqual(['bread:false', 'cheese:false', 'eggs:false', 'milk:true'])
   })

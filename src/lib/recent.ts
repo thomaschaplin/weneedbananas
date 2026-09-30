@@ -35,7 +35,10 @@ export function rememberList(slug: string, todo: number): void {
 }
 
 export function forgetList(slug: string): void {
-  write(KEY, recentLists().filter((r) => r.slug !== slug))
+  write(
+    KEY,
+    recentLists().filter((r) => r.slug !== slug),
+  )
 }
 
 export function getName(): string {

@@ -143,6 +143,8 @@ wasabi washer wasp watch waterfall wave weasel whale wharf wheat wheel
 whirlwind whisk whisker whistle wicker widget wigwam wildcat willow wind
 windmill window wingnut winter wire wisteria wizard wok wolf wombat woodland
 workshop worm wreath wren wrench yacht yak yam yard yardstick yarn yarrow
-yeast yodel yogurt yoyo zebra zenith zigzag zipper zoo zucchini`.split(/\s+/).filter(Boolean)
+yeast yodel yogurt yoyo zebra zenith zigzag zipper zoo zucchini`
+  .split(/\s+/)
+  .filter(Boolean)
 
 export const WORD_SET: ReadonlySet<string> = new Set(WORDS)

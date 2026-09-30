@@ -48,8 +48,8 @@ export function ShareContent({ slug }: { slug: string }) {
       </div>
       <div class="qr" dangerouslySetInnerHTML={{ __html: qrSvg }} aria-label="QR code for this list" role="img" />
       <p class="muted small">
-        Anyone with these three words can see and edit this list, so share them only with the people you shop with.
-        Say them out loud, scan the code, or type them on the home page.
+        Anyone with these three words can see and edit this list, so share them only with the people you shop with. Say
+        them out loud, scan the code, or type them on the home page.
       </p>
     </div>
   )

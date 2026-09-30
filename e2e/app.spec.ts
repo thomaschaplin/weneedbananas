@@ -142,3 +142,18 @@ test('theme toggle overrides the system setting and persists', async ({ page }) 
   await expect(html).not.toHaveAttribute('data-theme')
   expect(await page.evaluate(() => localStorage.getItem('wnb:theme'))).toBeNull()
 })
+
+for (const width of [320, 360]) {
+  test.describe(`${width}px phones`, () => {
+    test.use({ viewport: { width, height: 640 } })
+
+    for (const path of ['/', '/lemon.fork.bulb']) {
+      test(`${path} does not scroll sideways at ${width}px`, async ({ page }) => {
+        await page.goto(path)
+        await page.waitForLoadState('networkidle')
+        const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+        expect(scrollWidth).toBe(width)
+      })
+    }
+  })
+}

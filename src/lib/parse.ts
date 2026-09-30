@@ -6,20 +6,60 @@ export interface ParsedItem {
 }
 
 const UNIT_ALIASES: Record<string, string> = {
-  g: 'g', gram: 'g', grams: 'g', gr: 'g',
-  kg: 'kg', kilo: 'kg', kilos: 'kg', kilogram: 'kg', kilograms: 'kg',
-  ml: 'ml', l: 'l', litre: 'l', litres: 'l', liter: 'l', liters: 'l', ltr: 'l', cl: 'cl',
-  lb: 'lb', lbs: 'lb', oz: 'oz', pt: 'pint', pint: 'pint', pints: 'pint',
-  pack: 'pack', packs: 'pack', pk: 'pack', packet: 'pack', packets: 'pack',
-  tin: 'tin', tins: 'tin', can: 'can', cans: 'can',
-  jar: 'jar', jars: 'jar', bottle: 'bottle', bottles: 'bottle',
-  bag: 'bag', bags: 'bag', box: 'box', boxes: 'box',
-  bunch: 'bunch', bunches: 'bunch', loaf: 'loaf', loaves: 'loaf',
-  tub: 'tub', tubs: 'tub', dozen: 'dozen', doz: 'dozen',
+  g: 'g',
+  gram: 'g',
+  grams: 'g',
+  gr: 'g',
+  kg: 'kg',
+  kilo: 'kg',
+  kilos: 'kg',
+  kilogram: 'kg',
+  kilograms: 'kg',
+  ml: 'ml',
+  l: 'l',
+  litre: 'l',
+  litres: 'l',
+  liter: 'l',
+  liters: 'l',
+  ltr: 'l',
+  cl: 'cl',
+  lb: 'lb',
+  lbs: 'lb',
+  oz: 'oz',
+  pt: 'pint',
+  pint: 'pint',
+  pints: 'pint',
+  pack: 'pack',
+  packs: 'pack',
+  pk: 'pack',
+  packet: 'pack',
+  packets: 'pack',
+  tin: 'tin',
+  tins: 'tin',
+  can: 'can',
+  cans: 'can',
+  jar: 'jar',
+  jars: 'jar',
+  bottle: 'bottle',
+  bottles: 'bottle',
+  bag: 'bag',
+  bags: 'bag',
+  box: 'box',
+  boxes: 'box',
+  bunch: 'bunch',
+  bunches: 'bunch',
+  loaf: 'loaf',
+  loaves: 'loaf',
+  tub: 'tub',
+  tubs: 'tub',
+  dozen: 'dozen',
+  doz: 'dozen',
 }
 
 const NUM = String.raw`(\d+(?:[.,]\d+)?|½|¼|¾)`
-const UNIT = String.raw`(${Object.keys(UNIT_ALIASES).sort((a, b) => b.length - a.length).join('|')})`
+const UNIT = String.raw`(${Object.keys(UNIT_ALIASES)
+  .sort((a, b) => b.length - a.length)
+  .join('|')})`
 
 // "500g mince", "2 x milk", "2x milk", "3 tins tomatoes", "2 milk"
 const LEADING = new RegExp(String.raw`^${NUM}\s*(?:${UNIT}\b\.?|x\b)?\s*(?:of\s+)?(.+)$`, 'i')

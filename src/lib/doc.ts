@@ -173,7 +173,11 @@ export function setMissing(ld: ListDoc, id: string, missing: boolean): void {
   }, LOCAL)
 }
 
-export function updateItem(ld: ListDoc, id: string, patch: Partial<Pick<Item, 'name' | 'qty' | 'unit' | 'note'>>): void {
+export function updateItem(
+  ld: ListDoc,
+  id: string,
+  patch: Partial<Pick<Item, 'name' | 'qty' | 'unit' | 'note'>>,
+): void {
   const m = ld.items.get(id)
   if (!m) return
   ld.doc.transact(() => {
@@ -247,7 +251,11 @@ export function groupByAisle(items: Item[], order: string[]): AisleGroup[] {
 
 /** Frequently added items that are not currently needed. */
 export function usuals(ld: ListDoc, limit = 12): HistoryEntry[] {
-  const onList = new Set(allItems(ld).filter((i) => !i.done).map((i) => i.key))
+  const onList = new Set(
+    allItems(ld)
+      .filter((i) => !i.done)
+      .map((i) => i.key),
+  )
   const out: (HistoryEntry & { key: string })[] = []
   ld.history.forEach((h, key) => {
     if (!onList.has(key) && h.count >= 2) out.push({ ...h, key })
@@ -258,7 +266,11 @@ export function usuals(ld: ListDoc, limit = 12): HistoryEntry[] {
 export function suggest(ld: ListDoc, prefix: string, limit = 6): HistoryEntry[] {
   const p = prefix.trim().toLowerCase()
   if (p.length < 1) return []
-  const onList = new Set(allItems(ld).filter((i) => !i.done).map((i) => i.key))
+  const onList = new Set(
+    allItems(ld)
+      .filter((i) => !i.done)
+      .map((i) => i.key),
+  )
   const out: (HistoryEntry & { key: string; score: number })[] = []
   ld.history.forEach((h, key) => {
     if (onList.has(key)) return

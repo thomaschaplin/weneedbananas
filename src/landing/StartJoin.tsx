@@ -63,8 +63,7 @@ export function StartJoin() {
       </form>
       {error && (
         <p class="join-error" role="alert">
-          {error.text}{' '}
-          {error.fix && <a href={`/${error.fix}`}>Yes, open it</a>}
+          {error.text} {error.fix && <a href={`/${error.fix}`}>Yes, open it</a>}
           {error.raw && (
             <>
               {error.fix ? ' · ' : ''}

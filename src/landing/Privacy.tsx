@@ -9,17 +9,16 @@ export function Privacy() {
 
         <h2>What we collect</h2>
         <p>
-          Nothing about you or your lists. There are no accounts, no emails, no ads and no cookies. We have no
-          database.
+          Nothing about you or your lists. There are no accounts, no emails, no ads and no cookies. We have no database.
         </p>
         <p>
           We count visits and page speed with Vercel Web Analytics and Speed Insights, which are cookieless and don't
-          identify you. On list pages the three words are replaced with a plain "/list" before anything is sent, so
-          they never leave your device.
+          identify you. On list pages the three words are replaced with a plain "/list" before anything is sent, so they
+          never leave your device.
         </p>
         <p>
-          Your browser remembers a few conveniences for you: the lists you've opened, and the name you optionally set
-          so others see who's at the shop. These stay on your device.
+          Your browser remembers a few conveniences for you: the lists you've opened, and the name you optionally set so
+          others see who's at the shop. These stay on your device.
         </p>
 
         <h2>Where your list lives</h2>
@@ -36,8 +35,8 @@ export function Privacy() {
             visit), list pages load from your device and don't need the host at all.
           </li>
           <li>
-            <strong>Public Nostr relays</strong> help devices with the same list find each other. They see a
-            scrambled room id derived from your words and an encrypted handshake, never the words or the items.
+            <strong>Public Nostr relays</strong> help devices with the same list find each other. They see a scrambled
+            room id derived from your words and an encrypted handshake, never the words or the items.
           </li>
           <li>
             <strong>Public STUN servers</strong> help devices behind home routers connect, as with any browser video
@@ -59,8 +58,8 @@ export function Privacy() {
 
         <h2>Deleting</h2>
         <p>
-          In a list, open the menu and choose "Remove from this device". Once every device that had the list removes
-          it, it no longer exists anywhere.
+          In a list, open the menu and choose "Remove from this device". Once every device that had the list removes it,
+          it no longer exists anywhere.
         </p>
       </article>
     </Page>
