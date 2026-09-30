@@ -1,6 +1,46 @@
 import { Page } from './Layout'
 import { SyncDiagram } from './SyncDiagram'
 
+// Keep in step with the "Who else is involved" section of Privacy.tsx.
+const WHO_SEES: { who: string; rows: [tag: string, text: string, yes: boolean][] }[] = [
+  {
+    who: 'Your phones',
+    rows: [
+      ['Sees', 'The three words, every item and who is on the list.', true],
+      ['Keeps', 'The whole list, saved in the browser, so it works offline.', true],
+    ],
+  },
+  {
+    who: 'Nostr relays',
+    rows: [
+      [
+        'Sees',
+        'A scrambled 64-character room id and an encrypted handshake, just long enough to introduce the phones.',
+        true,
+      ],
+      ['Never sees', 'The three words or any item on the list.', false],
+    ],
+  },
+  {
+    who: 'STUN servers',
+    rows: [
+      ['Sees', 'IP addresses, so phones behind home routers can reach each other, as in any browser video call.', true],
+      ['Never sees', 'The room id or any item on the list.', false],
+    ],
+  },
+  {
+    who: 'Our web host',
+    rows: [
+      [
+        'Sees',
+        'Requests for the app files, like any website, in short-lived logs. After your first visit, lists load from your phone.',
+        true,
+      ],
+      ['Never sees', 'Your items. There are no accounts and no database of lists.', false],
+    ],
+  },
+]
+
 export function HowItWorks() {
   return (
     <Page>
@@ -44,6 +84,21 @@ export function HowItWorks() {
         <h2>Step by step</h2>
         <p>Here's everything that happens between two phones, from typing in the words to an item showing up.</p>
         <SyncDiagram />
+
+        <h2>Who sees what</h2>
+        <div class="who-sees">
+          {WHO_SEES.map((w) => (
+            <section class="who" key={w.who}>
+              <h3>{w.who}</h3>
+              {w.rows.map(([tag, text, yes]) => (
+                <p key={tag}>
+                  <span class={`who-tag ${yes ? 'who-yes' : 'who-no'}`}>{tag}</span>
+                  {text}
+                </p>
+              ))}
+            </section>
+          ))}
+        </div>
 
         <h2>The one trade-off</h2>
         <p>

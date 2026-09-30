@@ -822,6 +822,55 @@ h1 {
   fill: var(--leaf);
 }
 
+.who-sees {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.who {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+
+.who h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.who p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.who-tag {
+  display: block;
+  width: fit-content;
+  margin-bottom: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.who-yes {
+  background: var(--leaf-soft);
+  color: var(--leaf);
+}
+
+.who-no {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
 .error-hint {
   margin: -12px 0 24px;
   font-size: 1.05rem;
