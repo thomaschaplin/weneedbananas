@@ -29,6 +29,25 @@ test('list pages are marked noindex', async ({ request }) => {
   expect(html).not.toContain('<h1>')
 })
 
+test('unknown pages get a real 404 with a way back', async ({ page, request }) => {
+  const res = await request.get('/definitely-not-here', { headers: { accept: 'text/html' } })
+  expect(res.status()).toBe(404)
+  const html = await res.text()
+  expect(html).toContain('noindex')
+  expect(html).toContain('<h1>')
+
+  await page.goto('/lemon-fork-bulb')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('every aisle')
+  await expect(page.getByRole('link', { name: 'lemon.fork.bulb' })).toHaveAttribute('href', '/lemon.fork.bulb')
+  await expect(page.getByRole('button', { name: 'Start a new list' })).toBeVisible()
+})
+
+test('offline page is prerendered and noindex', async ({ request }) => {
+  const html = await (await request.get('/offline')).text()
+  expect(html).toContain('<h1>')
+  expect(html).toContain('noindex')
+})
+
 test('start a list, add, tick off in shop mode and finish', async ({ page, context }) => {
   await new MockRelay().attach(context)
   await page.goto('/')

@@ -1,5 +1,6 @@
-// Runs after `vite build`: renders the static pages to HTML so crawlers and
-// answer engines get real content, and injects structured data.
+// Runs at the end of `vite build` (the wnb-prerender plugin), before the service worker is
+// generated: renders the static pages to HTML so crawlers and answer engines get real content,
+// and injects structured data.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { ComponentType } from 'preact'
@@ -7,6 +8,8 @@ import { renderToString } from 'preact-render-to-string'
 import { FAQ, SITE } from '../src/content'
 import { HowItWorks } from '../src/landing/HowItWorks'
 import { Landing } from '../src/landing/Landing'
+import { NotFound } from '../src/landing/NotFound'
+import { Offline } from '../src/landing/Offline'
 import { Privacy } from '../src/landing/Privacy'
 
 const dist = resolve(import.meta.dirname, '../dist')
@@ -93,6 +96,9 @@ const pages: { file: string; Component: ComponentType; graph: object[] }[] = [
     Component: Privacy,
     graph: [website, breadcrumb('/privacy', 'Privacy')],
   },
+  // Error pages are noindex and carry no structured data.
+  { file: '404.html', Component: NotFound, graph: [] },
+  { file: 'offline.html', Component: Offline, graph: [] },
 ]
 
 for (const { file, Component, graph } of pages) {
