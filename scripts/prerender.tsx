@@ -7,6 +7,8 @@ import { renderToString } from 'preact-render-to-string'
 import { FAQ, SITE } from '../src/content'
 import { HowItWorks } from '../src/landing/HowItWorks'
 import { Landing } from '../src/landing/Landing'
+import { NotFound } from '../src/landing/NotFound'
+import { Offline } from '../src/landing/Offline'
 import { Privacy } from '../src/landing/Privacy'
 
 const dist = resolve(import.meta.dirname, '../dist')
@@ -93,6 +95,9 @@ const pages: { file: string; Component: ComponentType; graph: object[] }[] = [
     Component: Privacy,
     graph: [website, breadcrumb('/privacy', 'Privacy')],
   },
+  // Error pages are noindex and carry no structured data.
+  { file: '404.html', Component: NotFound, graph: [] },
+  { file: 'offline.html', Component: Offline, graph: [] },
 ]
 
 for (const { file, Component, graph } of pages) {

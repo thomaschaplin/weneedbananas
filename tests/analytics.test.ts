@@ -11,4 +11,8 @@ describe('redactUrl', () => {
     expect(redactUrl('https://weneedbananas.com/')).toBe('https://weneedbananas.com/')
     expect(redactUrl('https://weneedbananas.com/privacy?ref=x#top')).toBe('https://weneedbananas.com/privacy')
   })
+
+  it('replaces the whole path when told to', () => {
+    expect(redactUrl('https://weneedbananas.com/lemon/fork/bulb?x=1', '/404')).toBe('https://weneedbananas.com/404')
+  })
 })
