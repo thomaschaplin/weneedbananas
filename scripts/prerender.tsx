@@ -1,5 +1,6 @@
-// Runs after `vite build`: renders the static pages to HTML so crawlers and
-// answer engines get real content, and injects structured data.
+// Runs at the end of `vite build` (the wnb-prerender plugin), before the service worker is
+// generated: renders the static pages to HTML so crawlers and answer engines get real content,
+// and injects structured data.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { ComponentType } from 'preact'

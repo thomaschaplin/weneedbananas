@@ -1,6 +1,8 @@
+/// <reference types="vitest/config" />
 import { defineConfig, type Connect } from 'vite'
 import preact from '@preact/preset-vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 
@@ -34,8 +36,20 @@ export default defineConfig({
       configureServer: (server) => void server.middlewares.use(rewrites),
       configurePreviewServer: (server) => void server.middlewares.use(rewrites),
     },
+    {
+      // Prerender the static pages before the service worker is generated, so its precache
+      // revisions hash the final HTML and installed copies pick up content changes.
+      name: 'wnb-prerender',
+      apply: 'build',
+      closeBundle: {
+        order: 'pre',
+        sequential: true,
+        handler: () => void execFileSync('npx', ['tsx', 'scripts/prerender.tsx'], { stdio: 'inherit' }),
+      },
+    },
     VitePWA({
       registerType: 'autoUpdate',
+      integration: { closeBundleOrder: 'post' },
       injectRegister: false,
       manifest: {
         name: 'We Need Bananas',
@@ -69,6 +83,10 @@ export default defineConfig({
       },
     }),
   ],
+  test: {
+    // e2e/ is Playwright's; `npm run test:e2e` runs it.
+    include: ['tests/**/*.test.ts'],
+  },
   build: {
     rollupOptions: {
       input: {

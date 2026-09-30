@@ -6,7 +6,7 @@
   "description": "Shared shopping lists with no signup and no server. Open a three-word list, share the words, shop together.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build && tsx scripts/prerender.tsx",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
