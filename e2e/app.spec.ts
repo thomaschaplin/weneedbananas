@@ -118,6 +118,31 @@ test('two devices sync peer-to-peer', async ({ browser }) => {
   await b.close()
 })
 
+test('theme toggle overrides the system setting and persists', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' })
+  await page.goto('/how-it-works')
+  const html = page.locator('html')
+  const toggle = page.getByRole('button', { name: 'Dark mode' })
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+  await expect(html).not.toHaveAttribute('data-theme')
+
+  await toggle.click()
+  await expect(html).toHaveAttribute('data-theme', 'dark')
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  const bg = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor)
+  expect(await bg()).toBe('rgb(23, 21, 15)')
+
+  // Survives navigation, including into a list.
+  await page.goto('/lemon.fork.bulb')
+  await expect(html).toHaveAttribute('data-theme', 'dark')
+  await expect(page.getByRole('button', { name: 'Dark mode' })).toHaveAttribute('aria-pressed', 'true')
+
+  // Switching back to what the system shows clears the override.
+  await page.getByRole('button', { name: 'Dark mode' }).click()
+  await expect(html).not.toHaveAttribute('data-theme')
+  expect(await page.evaluate(() => localStorage.getItem('wnb:theme'))).toBeNull()
+})
+
 for (const width of [320, 360]) {
   test.describe(`${width}px phones`, () => {
     test.use({ viewport: { width, height: 640 } })

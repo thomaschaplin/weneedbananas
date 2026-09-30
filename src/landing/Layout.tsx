@@ -1,5 +1,6 @@
 import type { ComponentChildren } from 'preact'
 import { BananaMark } from './Logo'
+import { ThemeToggle } from './ThemeToggle'
 
 export function SiteHeader() {
   return (
@@ -11,6 +12,7 @@ export function SiteHeader() {
       <nav aria-label="Main">
         <a href="/how-it-works">How it works</a>
         <a href="/privacy">Privacy</a>
+        <ThemeToggle />
       </nav>
     </header>
   )
