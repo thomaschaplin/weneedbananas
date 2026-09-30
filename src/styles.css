@@ -34,6 +34,26 @@
   }
 }
 
+/* An explicit choice from the theme toggle (public/theme.js) wins over the system setting. */
+:root[data-theme='dark'] {
+  --bg: #17150f;
+  --surface: #211e16;
+  --surface-2: #2b2616;
+  --ink: #f6efd9;
+  --muted: #b3a888;
+  --line: #3a3426;
+  --banana-deep: #ffd23f;
+  --leaf: #5cc774;
+  --leaf-soft: #1f3324;
+  --danger: #ff8a65;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 24px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
 *,
 *::before,
 *::after {
@@ -179,6 +199,35 @@ button {
   opacity: 0.3;
 }
 
+.theme-toggle svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-toggle .theme-sun,
+:root[data-theme='dark'] .theme-toggle .theme-moon {
+  display: none;
+}
+
+:root[data-theme='dark'] .theme-toggle .theme-sun {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .theme-toggle .theme-moon {
+    display: none;
+  }
+
+  :root:not([data-theme='light']) .theme-toggle .theme-sun {
+    display: block;
+  }
+}
+
 .linkish {
   border: 0;
   background: none;
@@ -218,6 +267,7 @@ button {
 
 .site-header nav {
   display: flex;
+  align-items: center;
   gap: 18px;
   font-size: 0.95rem;
   white-space: nowrap;
@@ -236,6 +286,17 @@ button {
   .site-header nav a[href='/privacy'] {
     display: none;
   }
+}
+
+/* Leave room for the brand and the theme toggle; both links are in the footer too. */
+@media (max-width: 400px) {
+  .site-header nav a[href='/how-it-works'] {
+    display: none;
+  }
+}
+
+.site-header .theme-toggle {
+  margin: -6px -10px -6px -4px;
 }
 
 .site-header nav a {
@@ -286,6 +347,11 @@ h1 {
     background: none;
     color: var(--banana);
   }
+}
+
+:root[data-theme='dark'] .hl {
+  background: none;
+  color: var(--banana);
 }
 
 .lede {
