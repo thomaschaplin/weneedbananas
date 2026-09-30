@@ -1,0 +1,12 @@
+# Shopping lists live at /word.word.word and are private to the people who
+# know the words. They are never to be crawled, indexed or used for training.
+User-agent: *
+Allow: /$
+Allow: /how-it-works
+Allow: /privacy
+Allow: /llms.txt
+Allow: /assets/
+Disallow: /*.*.
+Disallow: /list
+
+Sitemap: https://weneedbananas.com/sitemap.xml
