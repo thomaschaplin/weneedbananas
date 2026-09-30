@@ -14,6 +14,8 @@
     "images": "node scripts/make-images.mjs"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "preact": "^10.29.8",
     "qrcode-generator": "^2.0.4",
     "trystero": "^0.25.4",

@@ -1,5 +1,6 @@
 import { render } from 'preact'
 import '../styles.css'
+import { initAnalytics } from '../lib/analytics'
 import { SLUG_RE } from '../lib/slug'
 import { registerSW } from '../sw'
 import { ListApp } from './ListApp'
@@ -14,4 +15,5 @@ if (!SLUG_RE.test(slug)) {
   document.title = `${slug} · We Need Bananas`
   render(<ListApp slug={slug} />, document.getElementById('app')!)
   registerSW()
+  initAnalytics()
 }

@@ -9,7 +9,13 @@ export function Privacy() {
 
         <h2>What we collect</h2>
         <p>
-          Nothing. There are no accounts, no emails, no analytics, no ads and no cookies. We have no database.
+          Nothing about you or your lists. There are no accounts, no emails, no ads and no cookies. We have no
+          database.
+        </p>
+        <p>
+          We count visits and page speed with Vercel Web Analytics and Speed Insights, which are cookieless and don't
+          identify you. On list pages the three words are replaced with a plain "/list" before anything is sent, so
+          they never leave your device.
         </p>
         <p>
           Your browser remembers a few conveniences for you: the lists you've opened, and the name you optionally set
