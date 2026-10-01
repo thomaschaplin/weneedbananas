@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
     "images": "node scripts/make-images.mjs",
+    "showreel": "node showreel/build.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
