@@ -1,13 +1,18 @@
-// Renders 1080x1920 Instagram story images to public/stories/story-N.png.
-// Run with: node scripts/make-story.mjs
+// Renders Instagram images: 1080x1920 stories to public/stories/story-N.png and
+// 1080x1350 feed posts to public/posts/post-N.png.
+// Run with: node scripts/make-social.mjs
 // Every story keeps the top ~250px and bottom ~290px clear for Instagram's UI,
-// and leaves a gap above the footer where a link sticker can sit.
+// and leaves a gap above the footer where a link sticker can sit. Posts keep
+// their text inside the 3:4 crop the profile grid shows.
 import { chromium } from 'playwright'
 import { mkdirSync, readFileSync } from 'node:fs'
 
 const svg = readFileSync(new URL('../public/favicon.svg', import.meta.url), 'utf8')
-const outDir = new URL('../public/stories/', import.meta.url).pathname
-mkdirSync(outDir, { recursive: true })
+const dir = (name) => {
+  const path = new URL(`../public/${name}/`, import.meta.url).pathname
+  mkdirSync(path, { recursive: true })
+  return path
+}
 
 const INK = '#1f1a0e'
 const CREAM = '#fffbea'
@@ -56,10 +61,16 @@ const footer = (color = INK, cta = 'tap the link to start a list') => `
     <div style="margin-top:14px;font-size:58px;font-weight:900;letter-spacing:-0.03em">weneedbananas.com</div>
   </div>`
 
-const page = ({ bg, color = INK, deco = '', body, foot = footer(color) }) => `
-<body style="margin:0;width:1080px;height:1920px;overflow:hidden;background:${bg};font-family:ui-rounded,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:${color};position:relative">
+const postFooter = (color = INK, pill = BANANA, pillInk = INK) => `
+  <div style="position:absolute;left:84px;right:84px;bottom:70px;display:flex;align-items:center;justify-content:space-between;color:${color}">
+    <span style="font-size:46px;font-weight:900;letter-spacing:-0.03em">weneedbananas.com</span>
+    <span style="background:${pill};color:${pillInk};border-radius:999px;padding:12px 26px;font-size:30px;font-weight:850">link in bio</span>
+  </div>`
+
+const page = ({ bg, color = INK, deco = '', body, height = 1920, top = 250, foot = footer(color) }) => `
+<body style="margin:0;width:1080px;height:${height}px;overflow:hidden;background:${bg};font-family:ui-rounded,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:${color};position:relative">
   ${deco}
-  <div style="position:relative;padding:250px 84px 0">${body}</div>
+  <div style="position:relative;padding:${top}px 84px 0">${body}</div>
   ${foot}
 </body>`
 
@@ -213,11 +224,147 @@ const stories = [
   }),
 ]
 
+const post = (opts) =>
+  page({
+    height: 1350,
+    top: 84,
+    foot: opts.bg === BANANA ? postFooter(INK, INK, CREAM) : postFooter(opts.color),
+    ...opts,
+  })
+
+const tile = (t) =>
+  `<span style="background:#fff;border:4px solid ${INK};border-radius:28px;box-shadow:0 10px 0 ${INK};padding:18px 30px;font-family:ui-monospace,Menlo,monospace;font-size:66px;font-weight:800">${t}</span>`
+
+const dot = `<span style="font-size:80px;font-weight:900;line-height:1">.</span>`
+
+const posts = [
+  // 1. The hero: three words.
+  post({
+    bg: BANANA,
+    deco: bigBanana('right:-60px;top:-50px;font-size:300px;transform:rotate(-24deg)'),
+    body: `${logo()}
+      ${headline(`The shopping list you share with ${mark('three words')}.`, 92)}
+      ${card(
+        listHead('lemon.fork.bulb') +
+          [
+            ['🍌', 'Bananas', '6', true],
+            ['🥖', 'Sourdough', '', false],
+            ['🥛', 'Milk', '2 pints', false],
+            ['🥚', 'Eggs', '12', false],
+          ]
+            .map(row)
+            .join(''),
+        { rotate: -2 },
+      )}
+      <div style="display:flex;flex-wrap:wrap;gap:18px;margin-top:60px">
+        ${['No signup', 'Sorted by aisle', 'Works offline'].map((t) => chip(t)).join('')}
+      </div>`,
+  }),
+
+  // 2. The words are the whole login.
+  post({
+    bg: CREAM,
+    body: `${logo()}
+      ${headline(`No account.<br>No password.<br>Just ${mark('three words', BANANA)}.`, 104)}
+      <div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-top:90px;transform:rotate(-3deg)">
+        ${tile('lemon')}${dot}${tile('fork')}${dot}${tile('bulb')}
+      </div>
+      <div style="margin-top:70px;font-size:40px;font-weight:700;color:#6b6250;text-align:center">Anyone with the words is on the list.</div>`,
+  }),
+
+  // 3. Quantities merge.
+  post({
+    bg: LEAF,
+    color: '#fff',
+    body: `${logo('#fff', '#fff')}
+      ${headline(`Add 6 eggs twice.<br>Get ${mark('12 eggs', BANANA)}.`, 100, '#fff')}
+      <div style="display:flex;flex-direction:column;gap:22px;margin-top:64px;font-size:40px;font-weight:700">
+        ${['6 eggs', 'eggs x6']
+          .map(
+            (t) =>
+              `<div style="align-self:flex-start;background:rgba(255,255,255,.16);border:3px dashed rgba(255,255,255,.7);border-radius:24px;padding:18px 30px">+ ${t}</div>`,
+          )
+          .join('')}
+      </div>
+      <div style="font-size:64px;font-weight:900;margin:14px 0 0 40px">↓</div>
+      ${card(row(['🥚', 'Eggs', '12', false]).replace('border-top:2px solid #efe4bf;', ''), { rotate: 0, width: 700 })
+        .replace('margin:56px 0 0 24px', 'margin:14px 0 0 0')
+        .replace('padding:28px 40px 8px', 'padding:14px 40px')}
+      <div style="margin-top:44px;font-size:34px;font-weight:650;opacity:.9">"2 pints milk", "500g mince", "bananas x6": it understands.</div>`,
+  }),
+
+  // 4. Shop mode.
+  post({
+    bg: CREAM,
+    deco: bigBanana('right:-40px;bottom:200px;font-size:240px;transform:rotate(-20deg)'),
+    body: `${logo()}
+      ${headline(`Shop mode.<br>${mark('One lap.', BANANA)}`, 100)}
+      <div style="display:flex;flex-direction:column;gap:24px;margin-top:60px;font-size:42px;font-weight:750;max-width:700px">
+        ${[
+          ['👍', 'Big one-thumb buttons'],
+          ['☀️', 'Screen stays awake'],
+          ['🗺️', 'Aisle by aisle, in order'],
+          ['🏁', '"7 left" so you know how close you are'],
+        ]
+          .map(
+            ([e, t]) =>
+              `<div style="display:flex;gap:24px;align-items:center"><span style="flex:none;width:84px;height:84px;border-radius:24px;background:#fff;border:4px solid ${INK};box-sizing:border-box;display:grid;place-items:center;font-size:44px">${e}</span>${t}</div>`,
+          )
+          .join('')}
+      </div>`,
+  }),
+
+  // 5. Who's at the shop.
+  post({
+    bg: NIGHT,
+    color: '#f6efd9',
+    deco: `<div style="position:absolute;inset:0;background:radial-gradient(circle at 80% 25%,rgba(255,210,63,.22) 0,transparent 50%)"></div>`,
+    body: `${logo('#f6efd9', BANANA)}
+      ${headline(`Know when someone's ${mark('at the shop', BANANA)}.`, 100, '#f6efd9')}
+      <div style="margin-top:70px;background:#2b2616;border:3px solid ${BANANA};border-radius:32px;padding:34px 40px;font-size:40px;line-height:1.35;box-shadow:0 14px 40px rgba(0,0,0,.4)">
+        🛒 <b>Sam</b> is at the shop. Add anything you need now.
+      </div>
+      <div style="margin-top:56px;font-size:40px;font-weight:700;color:#b3a888;line-height:1.3">The perfect moment to add the thing you just remembered.</div>`,
+  }),
+
+  // 6. Out of stock.
+  post({
+    bg: BANANA,
+    deco: `<div style="position:absolute;inset:0;background:repeating-linear-gradient(-45deg,transparent 0 60px,rgba(255,255,255,.18) 60px 120px)"></div>`,
+    body: `${logo()}
+      ${headline(`Out of stock?<br>${mark("It'll wait.")}`, 104)}
+      ${card(
+        listHead('lemon.fork.bulb') +
+          row([
+            '🥑',
+            'Avocados',
+            `<span style="background:#fde9df;color:#b93815;font-weight:800;font-size:26px;padding:8px 18px;border-radius:999px;white-space:nowrap">🤷 couldn’t find it</span>`,
+            false,
+          ]) +
+          [
+            ['🍌', 'Bananas', '6', true],
+            ['🥛', 'Milk', '2 pints', true],
+          ]
+            .map(row)
+            .join(''),
+        { rotate: 2 },
+      )}
+      <div style="margin-top:56px;font-size:38px;font-weight:700;max-width:860px">Mark it and it stays on the list for next time.</div>`,
+  }),
+]
+
 const browser = await chromium.launch()
-const tab = await browser.newPage({ viewport: { width: 1080, height: 1920 } })
-for (const [i, html] of stories.entries()) {
-  await tab.setContent(html)
-  await tab.screenshot({ path: `${outDir}story-${i + 1}.png` })
+const tab = await browser.newPage()
+for (const [name, folder, list, height] of [
+  ['story', 'stories', stories, 1920],
+  ['post', 'posts', posts, 1350],
+]) {
+  const out = dir(folder)
+  await tab.setViewportSize({ width: 1080, height })
+  for (const [i, html] of list.entries()) {
+    await tab.setContent(html)
+    await tab.screenshot({ path: `${out}${name}-${i + 1}.png` })
+  }
+  console.log(`${list.length} images written to public/${folder}/`)
 }
 await browser.close()
-console.log(`${stories.length} stories written to public/stories/`)
