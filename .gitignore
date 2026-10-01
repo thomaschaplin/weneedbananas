@@ -7,6 +7,6 @@ dev-dist
 test-results
 playwright-report
 showreel/frames
-showreel/music.wav
+showreel/music*.wav
 showreel/fonts/emoji.ttf
 showreel/stills

@@ -891,11 +891,242 @@
         top: 0;
         bottom: auto;
       }
+
+      /* ---------- chat intro (alt=chat) ---------- */
+      #s0 {
+        background: #fffbea;
+        background-image: radial-gradient(rgba(31, 26, 14, 0.08) 2px, transparent 2.5px);
+        background-size: 40px 40px;
+      }
+      .chat-h {
+        position: absolute;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        font-size: 40px;
+        font-weight: 600;
+        background: #fffbea;
+        border-bottom: 3px solid #efe4bf;
+        z-index: 2;
+      }
+      .chat-h small {
+        font-size: 28px;
+        color: #6b6250;
+        font-weight: 500;
+      }
+      .crow {
+        position: absolute;
+        top: 0;
+        display: flex;
+        align-items: flex-end;
+        gap: 18px;
+        will-change: transform;
+      }
+      .crow .av {
+        width: 66px;
+        height: 66px;
+        border-radius: 50%;
+        background: #fff4c7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+      }
+      .bub {
+        font-size: 48px;
+        font-weight: 500;
+        padding: 20px 30px;
+        border-radius: 34px;
+        white-space: nowrap;
+        background: #fff;
+        color: #1f1a0e;
+        box-shadow: 0 6px 18px rgba(60, 45, 0, 0.12);
+      }
+      .crow.L .bub {
+        border-bottom-left-radius: 10px;
+      }
+      .crow.R .bub {
+        background: #ffd23f;
+        border-bottom-right-radius: 10px;
+      }
+      #chatDim {
+        position: absolute;
+        inset: 0;
+        background: #1f1a0e;
+        z-index: 3;
+      }
+      #chatTxt {
+        z-index: 4;
+        color: #f6efd9;
+        font-weight: 700;
+        letter-spacing: -3px;
+        text-align: center;
+        line-height: 1;
+      }
+      #chatTxt b {
+        color: #ffd23f;
+      }
+      #chatCirc {
+        z-index: 5;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: #ffd23f;
+      }
+
+      /* ---------- kinetic type (alt=type) ---------- */
+      #st .ti {
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+      #st .ti.pill {
+        background: rgba(255, 255, 255, 0.95);
+        color: #1f1a0e;
+        padding: 0.35em 0.7em;
+        border-radius: 999px;
+        letter-spacing: 0;
+        font-weight: 600;
+      }
+      #st .ti.strike::after {
+        content: '';
+        position: absolute;
+        left: -2%;
+        right: -2%;
+        top: 52%;
+        height: 0.09em;
+        border-radius: 0.05em;
+        background: currentColor;
+        transform-origin: 0 50%;
+        transform: scaleX(var(--s, 0));
+      }
+      #st .hl::before {
+        bottom: 0.08em;
+      }
+      #st .mj {
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-size: 120px;
+      }
+
+      /* ---------- midnight theme (alt=midnight) ---------- */
+      .alt-midnight #s2 {
+        background: #17150f;
+      }
+      .alt-midnight #s2 .ghost {
+        -webkit-text-stroke-color: rgba(255, 210, 63, 0.12);
+      }
+      .alt-midnight #s2 .line1,
+      .alt-midnight #s2 .cap,
+      .alt-midnight .h-big,
+      .alt-midnight #s5 .h,
+      .alt-midnight .pbar,
+      .alt-midnight #s7end .url {
+        color: #f6efd9;
+      }
+      .alt-midnight #s2 .word .w {
+        color: #ffd23f;
+      }
+      .alt-midnight #s2 .pill {
+        background: #2b2616;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+      .alt-midnight #s3 {
+        background-color: #17150f;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.07) 2px, transparent 2.5px);
+      }
+      .alt-midnight .hl {
+        color: #1f1a0e;
+      }
+      .alt-midnight .sub,
+      .alt-midnight .aisle-h,
+      .alt-midnight #s7end .tag {
+        color: #b3a888;
+      }
+      .alt-midnight .phone,
+      .alt-midnight #s5 .mini {
+        background: #050403;
+        box-shadow:
+          0 40px 90px rgba(0, 0, 0, 0.6),
+          inset 0 0 0 3px #3a3426;
+      }
+      .alt-midnight .phone .notch {
+        background: #050403;
+      }
+      .alt-midnight .phone .scr,
+      .alt-midnight #s5 .mini .scr {
+        background: #17150f;
+      }
+      .alt-midnight .pslug,
+      .alt-midnight .mhead {
+        background: #2b2616;
+        color: #f6efd9;
+      }
+      .alt-midnight .plive {
+        color: #5cc774;
+      }
+      .alt-midnight .chip {
+        background: #2b2616;
+        color: #f6efd9;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+      }
+      .alt-midnight .chip .tk {
+        border-color: #5a5240;
+      }
+      .alt-midnight .chip .q {
+        background: #3a3426;
+        color: #b3a888;
+      }
+      .alt-midnight #s5 {
+        background: #211e16;
+      }
+      .alt-midnight .mrow {
+        color: #f6efd9;
+      }
+      .alt-midnight #wire {
+        stroke: #ffd23f;
+      }
+      .alt-midnight .server {
+        background: #3a3426;
+      }
+      .alt-midnight .server i {
+        background: #4f4735;
+      }
+      .alt-midnight .stamp {
+        background: rgba(23, 21, 15, 0.85);
+      }
+      .alt-midnight .kbadge,
+      .alt-midnight .pkt,
+      .alt-midnight #s7end .pills div {
+        background: #ffd23f;
+        color: #1f1a0e;
+      }
+      .alt-midnight #s6 {
+        background: #0f2a17;
+      }
+      .alt-midnight #s7end {
+        background: #17150f;
+      }
     </style>
   </head>
   <body>
     <div id="stage">
       <div id="cam">
+        <!-- chat intro (alt=chat) -->
+        <div class="scene" id="s0">
+          <div class="chat-h" id="chatH"><span class="e">🏠</span> House <small>· Sam, Alex, you</small></div>
+          <div id="chatRows"></div>
+          <div id="chatDim"></div>
+          <div class="c" id="chatTxt">There's a <b>better</b><br />way.</div>
+          <div class="c" id="chatCirc"></div>
+        </div>
+        <!-- kinetic type (alt=type) -->
+        <div class="scene" id="st"></div>
+
         <!-- S1 -->
         <div class="scene" id="s1">
           <div id="rays"></div>
@@ -1134,13 +1365,17 @@
       <div id="flash"></div>
     </div>
 
+    <script src="variants.js"></script>
     <script>
       const FPS = 60,
-        DUR = 15,
         B = 60 / 128
       const q = new URLSearchParams(location.search)
       // ?v=1 lays everything out at 1080x1920 for Instagram Reels, keeping key content clear of the app's overlays.
       const V = q.has('v')
+      const ALT = q.get('alt') || 'main'
+      const VAR = VARIANTS[ALT]
+      const MID = VAR.theme === 'midnight'
+      const DUR = (VAR.beats || 32) * B
       const W = V ? 1080 : 1920,
         H = V ? 1920 : 1080
       const LY = V
@@ -1264,6 +1499,9 @@
         $('wire').parentNode.setAttribute('width', W)
         $('wire').parentNode.setAttribute('height', H)
       }
+      if (MID) document.documentElement.classList.add('alt-midnight')
+      if (VAR.sub) $('s1sub').textContent = VAR.sub
+      ;(VAR.cards || []).forEach((c, i) => ($(`cd${i + 1}t`).textContent = c))
       document.querySelectorAll('#s1 .ring').forEach((d) => {
         d.style.left = LY.logo[0] + 'px'
         d.style.top = LY.logo[1] + 'px'
@@ -1437,7 +1675,7 @@
       const strips = []
       for (let i = 0; i < 8; i++) {
         const d = document.createElement('div')
-        d.style.cssText = `position:absolute;top:0;left:${i * 240}px;width:242px;height:${H}px;background:#2f8f46`
+        d.style.cssText = `position:absolute;top:0;left:${i * 240}px;width:242px;height:${H}px;background:${MID ? '#0f2a17' : '#2f8f46'}`
         $('strips').appendChild(d)
         strips.push(d)
       }
@@ -1446,7 +1684,7 @@
       const urlChars = 'weneedbananas.com'.split('').map((c, i) => {
         const s = document.createElement('span')
         s.textContent = c
-        if (i >= 13) s.style.color = '#2f8f46'
+        if (i >= 13) s.style.color = MID ? '#5cc774' : '#2f8f46'
         $('url').appendChild(s)
         return s
       })
@@ -1518,7 +1756,7 @@
       const fmt = (n) => Math.round(n).toLocaleString('en-GB')
 
       // ---------------- render ----------------
-      function render(t) {
+      function renderMaster(t, rt) {
         // scene visibility (with overlaps for transitions)
         const on = {
           s1: t < 4 * B + 0.0,
@@ -1764,7 +2002,7 @@
             const at = arrivals[i]
             const k = P(t, at, at + 0.25)
             T(d, { o: k, s: lerp(1.25, 1, E.outBack(k)), x: lerp(-60, 0, E.outExpo(k)) })
-            d.style.background = t > at && t < at + 0.35 ? '#e3f4e6' : '#fff'
+            d.style.background = t > at && t < at + 0.35 ? (MID ? '#1f3324' : '#e3f4e6') : MID ? '#2b2616' : '#fff'
           })
           const kk = P(t, 21 * B + 0.3, 21 * B + 1.0)
           $('kb').textContent = `🔑 PBKDF2 × ${fmt(600000 * E.outCubic(kk))}`
@@ -1883,19 +2121,16 @@
         // HUD
         const cur = SC.find((s) => t >= s.a && t < s.b) || SC[SC.length - 1]
         const hud = $('hud')
-        let hudCol = cur.hud || '#f6efd9'
+        let hudCol = MID ? '#f6efd9' : cur.hud || '#f6efd9'
         if (cur.id === 's7')
-          hudCol = t < 29.5 * B ? (t < 28.5 * B ? '#ffd23f' : t < 29 * B ? '#1f1a0e' : '#ffffff') : '#1f1a0e'
+          hudCol =
+            t < 29.5 * B ? (t < 28.5 * B ? '#ffd23f' : t < 29 * B ? '#1f1a0e' : '#ffffff') : MID ? '#f6efd9' : '#1f1a0e'
         hud.style.color = hudCol
         hud.style.opacity = cur.id === 's1' ? 0 : P(t, 4 * B, 4 * B + 0.3)
-        $('hCh').textContent = cur.ch || ''
-        const fr = Math.round(t * FPS)
-        const ss = Math.floor(fr / FPS),
-          ff = fr % FPS
-        $('hTR').textContent = `00:00:${String(ss).padStart(2, '0')}:${String(ff).padStart(2, '0')}`
-        $('prog').style.width = (t / DUR) * 100 + '%'
-        $('prog').style.background = cur.id === 's2' || cur.id === 's7' ? '#1f1a0e' : '#ffd23f'
-        $('grain').style.backgroundImage = grains[fr % grains.length]
+        // Re-ordered edits drop the chapter numbers so they never read out of order.
+        $('hCh').textContent = VAR.segs.length > 2 ? (cur.ch || '').replace(/^\d+ — /, '') : cur.ch || ''
+        hudBase(rt)
+        $('prog').style.background = !MID && (cur.id === 's2' || cur.id === 's7') ? '#1f1a0e' : '#ffd23f'
         // flash on hard cuts
         const flashes = [4 * B, 28 * B, 25 * B]
         let fl = 0
@@ -1903,11 +2138,213 @@
         $('flash').style.opacity = fl
       }
 
+      function hudBase(rt) {
+        const fr = Math.round(rt * FPS)
+        const ss = Math.floor(fr / FPS),
+          ff = fr % FPS
+        $('hTR').textContent = `00:00:${String(ss).padStart(2, '0')}:${String(ff).padStart(2, '0')}`
+        $('prog').style.width = (rt / DUR) * 100 + '%'
+        $('grain').style.backgroundImage = grains[fr % grains.length]
+      }
+
+      // ---------------- chat intro ----------------
+      const CHAT = [
+        [0.05, 'L', '🧔', 'do we need anything from the shop?'],
+        [0.22, 'R', '', 'bananas'],
+        [0.36, 'L', '👩', 'I bought bananas yesterday'],
+        [0.5, 'R', '', 'we need MORE bananas'],
+        [0.62, 'L', '🧔', 'which list was it on??'],
+        [0.73, 'L', '👩', 'check the notes app'],
+        [0.84, 'R', '', 'WHICH notes app'],
+        [0.94, 'L', '🧔', 'got bananas 🍌'],
+        [1.03, 'L', '👩', 'me too 🙃'],
+        [1.11, 'R', '', '🤦'],
+      ]
+      const CX = { top: V ? 250 : 0, bottom: V ? 1420 : 1020, w: Math.min(900, W - 120), row: 112, gap: 18 }
+      $('chatH').style.top = CX.top + 'px'
+      $('chatH').style.height = (V ? 120 : 110) + 'px'
+      const chatRows = CHAT.map(([at, side, av, text]) => {
+        const d = document.createElement('div')
+        d.className = 'crow ' + side
+        d.innerHTML = (side === 'L' ? `<span class="av e">${av}</span>` : '') + `<span class="bub">${text}</span>`
+        if (side === 'L') d.style.left = (W - CX.w) / 2 + 'px'
+        else d.style.right = (W - CX.w) / 2 + 'px'
+        $('chatRows').appendChild(d)
+        return { d, at, side }
+      })
+      $('chatTxt').style.left = W / 2 + 'px'
+      $('chatTxt').style.top = H / 2 + 'px'
+      $('chatTxt').style.fontSize = (V ? 150 : 170) + 'px'
+      $('chatCirc').style.left = W / 2 + 'px'
+      $('chatCirc').style.top = H / 2 + 'px'
+      function renderChat(lt, rt) {
+        const step = CX.row + CX.gap
+        chatRows.forEach((r, i) => {
+          let off = 0
+          for (let j = i + 1; j < chatRows.length; j++)
+            off += E.outCubic(P(lt, chatRows[j].at, chatRows[j].at + 0.16)) * step
+          const k = P(lt, r.at, r.at + 0.22)
+          const y = CX.bottom - CX.row - off + (1 - E.outCubic(k)) * 40
+          r.d.style.transformOrigin = r.side === 'L' ? '0% 100%' : '100% 100%'
+          r.d.style.transform = `translateY(${y}px) scale(${lerp(0.5, 1, E.outBack(k))})`
+          r.d.style.opacity = k > 0 && y > CX.top ? 1 : 0
+        })
+        const dk = P(lt, 1.18, 1.3)
+        $('chatDim').style.opacity = dk * 0.88
+        const tk = P(lt, 1.22, 1.36)
+        T($('chatTxt'), { s: lerp(1.7, 1, E.outExpo(tk)), o: tk > 0 ? 1 : 0, blur: (1 - tk) * 12 })
+        const ck = E.inExpo(P(lt, 1.5, 4 * B))
+        T($('chatCirc'), { s: ck * (Math.hypot(W, H) / 100 + 0.5), o: ck > 0 ? 1 : 0 })
+        let x = 0,
+          y = 0
+        if (lt > 1.22) {
+          const d = lt - 1.22,
+            a = 20 * Math.exp(-d * 12)
+          x = a * Math.sin(d * 95)
+          y = a * Math.cos(d * 71)
+        }
+        $('cam').style.transform = `translate(${x}px,${y}px)`
+        $('hud').style.opacity = 0
+        hudBase(rt)
+      }
+
+      // ---------------- kinetic type ----------------
+      const TB = V ? 250 : 300 // base type size
+      seed = 5
+      const typeCards = TYPE_CARDS.map((c) => {
+        const bg = document.createElement('div')
+        bg.style.cssText = `position:absolute;inset:0;background:${c.bg};color:${c.fg}`
+        $('st').appendChild(bg)
+        const items = c.items.map((it) => {
+          const d = document.createElement('div')
+          d.className = 'c ti' + (it.e ? ' e' : '') + (it.pill ? ' pill' : '') + (it.strike ? ' strike' : '')
+          d.innerHTML = it.t
+          d.style.left = W / 2 + 'px'
+          d.style.top = H / 2 + (it.dy || 0) * TB * 0.95 + 'px'
+          d.style.fontSize = TB * (it.f || 1) + 'px'
+          if (it.c) d.style.color = it.c
+          bg.appendChild(d)
+          return { d, it }
+        })
+        let logo = null
+        if (c.logo) {
+          logo = $('logo2').cloneNode(true)
+          logo.removeAttribute('id')
+          logo.style.left = W / 2 + 'px'
+          logo.style.top = H / 2 - TB * 0.35 + 'px'
+          logo.setAttribute('width', TB * 1.3)
+          logo.setAttribute('height', TB * 1.3)
+          bg.appendChild(logo)
+        }
+        const mess = c.mess
+          ? ['🍌', '🥛', '🍞', '🧀', '🍌', '🥚', '📝', '🍌', '💬', '🍌'].map((e) => {
+              const d = document.createElement('div')
+              d.className = 'mj e'
+              d.textContent = e
+              bg.appendChild(d)
+              return { d, x: 60 + rnd() * (W - 180), y: 140 + rnd() * (H - 300), r: (rnd() - 0.5) * 60, ph: rnd() * 6 }
+            })
+          : []
+        return { c, bg, items, logo, mess }
+      })
+      // Shrink any line that would overflow the frame (needs fonts loaded).
+      function fitType() {
+        for (const card of typeCards) {
+          card.bg.style.display = ''
+          for (const { d } of card.items) {
+            const max = W - (V ? 120 : 240)
+            if (d.offsetWidth > max) d.style.fontSize = (parseFloat(d.style.fontSize) * max) / d.offsetWidth + 'px'
+          }
+        }
+      }
+      function renderType(lt, rt) {
+        const lb = lt / B
+        let fg = '#fff',
+          shk = 0
+        for (const card of typeCards) {
+          const { c } = card
+          const on = lb >= c.b && lb < c.e
+          card.bg.style.display = on ? '' : 'none'
+          if (!on) continue
+          fg = c.fg
+          const drift = 1 + 0.035 * ((lb - c.b) / (c.e - c.b))
+          shk = Math.max(shk, 10 * Math.exp(-(lt - c.b * B) * 14))
+          for (const { d, it } of card.items) {
+            const at = (it.at ?? c.b) * B
+            const k = P(lt, at, at + 0.16)
+            if (it.e)
+              T(d, {
+                s: E.outBack(P(lt, at, at + 0.3)) * drift,
+                o: k > 0 ? 1 : 0,
+                y: it.bob ? Math.sin(lt * 8) * 20 : 0,
+              })
+            else
+              T(d, {
+                s: lerp(1.6, 1, E.outExpo(k)) * drift,
+                o: k > 0 ? 1 : 0,
+                blur: (1 - k) * 12,
+                x: c.mess ? Math.sin(lt * 70) * 8 : 0,
+                r: c.mess ? Math.sin(lt * 23) * 3 : 0,
+              })
+            if (it.hl) d.querySelector('.hl').style.setProperty('--k', E.outExpo(P(lt, at + 0.12, at + 0.42)))
+            if (it.strike) d.style.setProperty('--s', E.outExpo(P(lt, it.strike * B, it.strike * B + 0.2)))
+            if (k > 0 && lt < at + 0.1) shk = Math.max(shk, 12)
+          }
+          if (card.logo) {
+            const k = P(lt, c.b * B, c.b * B + 0.4)
+            T(card.logo, { s: E.outBack(k) * drift, r: lerp(-160, 0, E.outBack(k)) })
+          }
+          card.mess.forEach((m, i) => {
+            const k = P(lt, c.b * B + i * 0.06, c.b * B + i * 0.06 + 0.25)
+            m.d.style.opacity = k > 0 ? 1 : 0
+            m.d.style.transform = `translate(${m.x + Math.sin(lt * 9 + m.ph) * 14}px,${m.y + Math.cos(lt * 7 + m.ph) * 14}px) rotate(${m.r + Math.sin(lt * 5 + m.ph) * 20}deg) scale(${E.outBack(k)})`
+          })
+        }
+        const d = lt % B
+        $('cam').style.transform = `translate(${shk * Math.sin(d * 95)}px,${shk * Math.cos(d * 71)}px)`
+        const hud = $('hud')
+        hud.style.opacity = 1
+        hud.style.color = fg
+        $('hCh').textContent = ''
+        $('prog').style.background = fg
+        hudBase(rt)
+      }
+
+      // ---------------- edit: map output time onto the master or a standalone scene ----------------
+      const SPECIAL = { chat: renderChat, type: renderType }
+      function render(t) {
+        const segs = VAR.segs
+        let i = 0
+        while (i + 1 < segs.length && t / B >= segs[i + 1][0] - 1e-9) i++
+        const [start, src] = segs[i]
+        const lt = t - start * B
+        const special = typeof src === 'string'
+        vis($('s0'), src === 'chat')
+        vis($('st'), src === 'type')
+        if (special) for (const id of ['stripes', 'strips', 'confetti']) vis($(id), false)
+        else vis($('confetti'), true)
+        if (special) {
+          for (const s of SC) vis($(s.id), false)
+          $('flash').style.opacity = 0
+          SPECIAL[src](lt, t)
+          return
+        }
+        renderMaster(src * B + lt, t)
+        // A cut between two non-adjacent moments gets a flash and a camera kick.
+        const prev = segs[i - 1]
+        if (prev && !(typeof prev[1] === 'number' && Math.abs(prev[1] + prev[2] - src) < 1e-6)) {
+          const a = 18 * Math.exp(-lt * 14)
+          $('cam').style.transform += ` translate(${a * Math.sin(lt * 95)}px,${a * Math.cos(lt * 71)}px)`
+          $('flash').style.opacity = Math.max(parseFloat($('flash').style.opacity) || 0, 0.5 * Math.exp(-lt * 18))
+        }
+      }
+
       window.render = render
       window.READY = document.fonts.ready
         .then(() => document.fonts.load('64px Emoji', '🍌🥦🍋🍴💡🛒🔒🔑🎉'))
         .then(() => document.fonts.load('700 64px Fredoka'))
         .then(() => document.fonts.load('700 30px Mono'))
+        .then(fitType)
       if (q.has('t')) render(parseFloat(q.get('t')))
       else if (!q.has('static')) {
         // live preview loop

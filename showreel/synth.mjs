@@ -1,8 +1,12 @@
+// Synthesises the soundtrack for one edit of the reel: node synth.mjs [main|chat|midnight|…] -> music-<alt>.wav
 import fs from 'fs'
-const SR = 44100,
-  DUR = 15,
-  N = SR * DUR,
-  B = 60 / 128
+import './variants.js'
+const ALT = process.argv[2] || 'main'
+const VAR = globalThis.VARIANTS[ALT]
+const B = 60 / 128,
+  SR = 44100,
+  DUR = (VAR.beats || 32) * B,
+  N = Math.round(SR * DUR)
 const L = new Float32Array(N),
   R = new Float32Array(N),
   VL = new Float32Array(N),
@@ -196,128 +200,175 @@ function bass(t, dur, m, g = 0.3) {
 }
 
 // ---------- arrangement ----------
-// F  C  Dm Bb   (I V vi IV), F major
-const CH = [
+// Events written in master-reel time play wherever the edit (VAR.segs) uses that moment.
+const at = (tm, fn) => {
+  for (const [ns, src, len] of VAR.segs)
+    if (typeof src === 'number' && tm >= src * B - 1e-6 && tm < (src + len) * B) fn(ns * B + tm - src * B)
+}
+const [G0, G1] = VAR.groove
+
+// F C Dm Bb (I V vi IV) in F major; midnight flips it to Dm Bb F C.
+const MAJ = [
   [65, 69, 72],
   [64, 67, 72],
   [62, 65, 69],
   [62, 65, 70],
 ]
-const ROOT = [41, 36, 38, 34]
-const chordAt = (beat) => Math.floor(beat / 4) % 4
+const CH = VAR.minor ? [MAJ[2], MAJ[3], MAJ[0], MAJ[1]] : MAJ
+const ROOT = VAR.minor ? [38, 34, 41, 36] : [41, 36, 38, 34]
+const LIFT = VAR.minor ? 0 : 12 // arp octave
+const chordAt = (beat) => ((Math.floor(beat / 4) % 4) + 4) % 4
 
-// intro: impact + shimmer + riser
-impact(0.0, 0.9)
-bell(0.02, 77, 0.12)
-bell(0.25, 84, 0.08)
-pad(0, 4 * B, [65, 69, 72, 77], 0.07, 0.03)
-for (let i = 0; i < 16; i++)
-  pluck((i * B) / 4 + 0.0, [65, 69, 72, 77, 81, 84][i % 6] + (i > 11 ? 12 : 0), 0.06 + i * 0.006, i % 2 ? 0.4 : -0.4, 7)
-riser(1.0, 4 * B, 0.3)
-whoosh(4 * B, 0.5, 0.4)
+// intro, up to the first downbeat of the groove
+if (ALT === 'chat') {
+  pad(0, G0 * B, [53, 60, 65], 0.04, 0.03)
+  const CHAT = [0.05, 0.22, 0.36, 0.5, 0.62, 0.73, 0.84, 0.94, 1.03, 1.11]
+  CHAT.forEach((t, i) => {
+    pluck(t, [84, 88, 81, 89, 84, 86, 88, 81, 79, 77][i], 0.1, i % 2 ? 0.4 : -0.4, 20)
+    pluck(t, [96, 100, 93, 101, 96, 98, 100, 93, 91, 89][i], 0.04, 0, 30)
+  })
+  impact(1.22, 0.8)
+  bell(1.22, 77, 0.12, 3)
+  riser(1.3, G0 * B, 0.32)
+} else if (G0 > 0) {
+  impact(0.0, 0.9)
+  bell(0.02, 77, 0.12)
+  bell(0.25, 84, 0.08)
+  pad(0, G0 * B, CH[0].concat(CH[0][0] + 12), 0.07, 0.03)
+  for (let i = 0; i < G0 * 4; i++)
+    pluck(
+      (i * B) / 4,
+      [65, 69, 72, 77, 81, 84][i % 6] + (i > 11 ? 12 : 0) - (VAR.minor ? 3 : 0),
+      0.06 + i * 0.006,
+      i % 2 ? 0.4 : -0.4,
+      7,
+    )
+  riser(Math.max(0, G0 * B - 0.9), G0 * B, 0.3)
+} else impact(0.0, 0.9)
+if (G0 > 0) whoosh(G0 * B, 0.5, 0.4)
 
-// main groove beats 4..28
-for (let b = 4; b < 28; b++) {
+// groove
+for (let b = G0; b < G1; b++) {
   const t = b * B
-  kick(t, b === 4 ? 1.2 : 1)
-  if (b % 2 === 1) clap(t, 0.45)
-  hat(t + B / 2, 0.16, b % 4 === 3)
-  const dense = (b >= 16 && b < 20) || (b >= 25 && b < 28)
-  if (dense) {
-    hat(t + B / 4, 0.08)
-    hat(t + (3 * B) / 4, 0.08)
+  kick(t, b === G0 ? 1.2 : 1)
+  if ((b - G0) % 2 === 1) clap(t, 0.45)
+  hat(t + B / 2, 0.16, (b - G0) % 4 === 3)
+  const c = chordAt(b - G0)
+  if (b - G0 >= 12 || VAR.minor) {
+    hat(t + B / 4, 0.07)
+    hat(t + (3 * B) / 4, 0.07)
   }
-  // bass offbeat 8ths
-  const c = chordAt(b - 4)
   bass(t + B / 2, (B / 2) * 0.9, ROOT[c] + 12, 0.22)
   bass(t, B / 4, ROOT[c], 0.12)
-  // arp 16ths
   for (let s = 0; s < 4; s++) {
-    const notes = CH[c]
-    const m = notes[(b * 4 + s) % 3] + (s === 3 ? 12 : 0)
-    pluck(t + (s * B) / 4, m + 12, b >= 10 ? 0.07 : 0.05, s % 2 ? 0.5 : -0.5, 12)
+    const m = CH[c][(b * 4 + s) % 3] + (s === 3 ? 12 : 0)
+    pluck(t + (s * B) / 4, m + LIFT, b - G0 >= 6 ? 0.07 : 0.05, s % 2 ? 0.5 : -0.5, VAR.minor ? 8 : 12)
   }
 }
-for (let bar = 1; bar < 7; bar++) {
-  const c = (bar - 1) % 4
-  pad(bar * 4 * B, 4 * B, CH[c], 0.06, 0.05)
-}
-// word slams
-;[5, 6, 7].forEach((b, i) => {
-  impact(b * B, 0.45)
-  bell(b * B, [77, 81, 84][i], 0.1, 4)
+for (let b = G0; b < G1; b += 4) pad(b * B, Math.min(4, G1 - b) * B, CH[chordAt(b - G0)], 0.06, VAR.minor ? 0.03 : 0.05)
+
+// a hit on every cut between non-adjacent moments
+VAR.segs.forEach(([ns, src], i) => {
+  const prev = VAR.segs[i - 1]
+  if (!prev || ns === G0) return
+  if (typeof prev[1] === 'number' && typeof src === 'number' && Math.abs(prev[1] + prev[2] - src) < 1e-6) return
+  whoosh(ns * B, 0.3, 0.32)
+  impact(ns * B, 0.35)
 })
-// typing ticks
-for (let i = 0; i < 33; i++) {
-  const t = 8 * B + 0.02 + i * (0.4 / 33)
-  let lp = 0
-  add(
-    t,
-    0.02,
-    (x) => {
-      const n = rnd()
-      lp += (n - lp) * 0.5
-      return (n - lp) * Math.exp(-x * 300)
-    },
-    { gain: 0.12, pan: i % 2 ? 0.3 : -0.3 },
-  )
-}
-// transitions
-whoosh(10 * B, 0.4, 0.38)
-whoosh(16 * B, 0.35, 0.45)
-whoosh(20 * B, 0.35, 0.35, true)
-whoosh(25 * B, 0.3, 0.4)
-// S3 chip landings (pentatonic up)
+
+// kinetic type: a chord stab on every word
+if (ALT === 'type')
+  for (const card of globalThis.TYPE_CARDS)
+    for (const it of card.items) {
+      const t = (it.at ?? card.b) * B
+      const c = CH[chordAt(Math.floor(it.at ?? card.b))]
+      c.forEach((m, i) => pluck(t, m + 12, 0.07, i - 1, 10))
+      if (card.mess && !it.at) impact(t, 0.6)
+    }
+
+// master-reel moments
+;[5, 6, 7].forEach((b, i) =>
+  at(b * B, (t) => {
+    impact(t, 0.45)
+    bell(t, [77, 81, 84][i], 0.1, 4)
+  }),
+)
+for (let i = 0; i < 33; i++)
+  at(8 * B + 0.02 + i * (0.4 / 33), (t) => {
+    let lp = 0
+    add(
+      t,
+      0.02,
+      (x) => {
+        const n = rnd()
+        lp += (n - lp) * 0.5
+        return (n - lp) * Math.exp(-x * 300)
+      },
+      { gain: 0.12, pan: i % 2 ? 0.3 : -0.3 },
+    )
+  })
+at(10 * B - 0.001, (t) => whoosh(t, 0.4, 0.38))
+at(16 * B - 0.001, (t) => whoosh(t, 0.35, 0.45))
+at(20 * B - 0.001, (t) => whoosh(t, 0.35, 0.35, true))
+at(25 * B - 0.001, (t) => whoosh(t, 0.3, 0.4))
 const PENT = [65, 67, 69, 72, 74, 77, 79, 81]
-for (let k = 0; k < 8; k++) pluck(10 * B + 1.0 + k * 0.045 + 0.42, PENT[k] + 12, 0.11, (k / 7) * 1.4 - 0.7, 14)
 for (let k = 0; k < 8; k++) {
-  let lp = 0
-  add(
-    10 * B + 0.25 + k * 0.055 + 0.15,
-    0.05,
-    (x) => {
-      const n = rnd()
-      lp += (n - lp) * 0.2
-      return lp * Math.exp(-x * 90)
-    },
-    { gain: 0.3 },
-  )
+  at(10 * B + 1.0 + k * 0.045 + 0.42, (t) => pluck(t, PENT[k] + 12, 0.11, (k / 7) * 1.4 - 0.7, 14))
+  at(10 * B + 0.25 + k * 0.055 + 0.15, (t) => {
+    let lp = 0
+    add(
+      t,
+      0.05,
+      (x) => {
+        const n = rnd()
+        lp += (n - lp) * 0.2
+        return lp * Math.exp(-x * 90)
+      },
+      { gain: 0.3 },
+    )
+  })
 }
-// S4 merge
-impact(18 * B, 0.9)
-bell(18 * B, 84, 0.18, 2)
-bell(18 * B + 0.06, 89, 0.12, 2.5)
-// S5 stamp + packets
-impact(21 * B + 0.04, 0.7)
-for (let i = 0; i < 7; i++) {
-  const at = 20 * B + 0.65 + i * 0.2 + 0.55
-  if (i !== 3 && i !== 6) pluck(at, [77, 81, 84, 89][Math.min(3, [0, 1, 2, 4, 5].indexOf(i))] + 0, 0.1, 0.6, 16)
-}
-// S6 ticks
-for (let i = 0; i < 7; i++) pluck(25 * B + 0.42 + i * 0.12, [72, 74, 77, 79, 81, 84, 86][i], 0.13, 0.3, 11)
-bell(25 * B + 1.25, 89, 0.15, 2)
-bell(25 * B + 1.3, 93, 0.1, 2)
-// S7 stat slams + finale
-;[28, 28.5, 29].forEach((b, i) => {
-  kick(b * B, 1.2)
-  impact(b * B, 0.5)
-  clap(b * B, 0.4)
-  bell(b * B, [72, 74, 77][i], 0.12, 5)
+at(18 * B, (t) => {
+  impact(t, 0.9)
+  bell(t, 84, 0.18, 2)
+  bell(t + 0.06, 89, 0.12, 2.5)
 })
-riser(29 * B, 29.5 * B, 0.3)
-kick(29.5 * B, 1.3)
-impact(29.5 * B, 1.0)
-pad(29.5 * B, 15 - 29.5 * B - 0.25, [53, 65, 69, 72, 77, 81], 0.11, 0.05)
-bass(29.5 * B, 15 - 29.5 * B - 0.2, 29, 0.3)
-;[77, 81, 84, 89, 93].forEach((m, i) => bell(29.5 * B + i * 0.07, m, 0.09, 1.5))
-for (let i = 0; i < 12; i++)
-  pluck(
-    29.5 * B + 0.4 + (i * B) / 4,
-    [89, 84, 81, 77][i % 4] + (i > 7 ? -12 : 0),
-    0.06 * (1 - i / 14),
-    i % 2 ? 0.6 : -0.6,
-    8,
-  )
+at(21 * B + 0.04, (t) => impact(t, 0.7))
+;[0, 1, 2, 4, 5].forEach((i, n) =>
+  at(20 * B + 0.65 + i * 0.2 + 0.55, (t) => pluck(t, [77, 81, 84, 89, 89][n], 0.1, 0.6, 16)),
+)
+for (let i = 0; i < 7; i++)
+  at(25 * B + 0.42 + i * 0.12, (t) => pluck(t, [72, 74, 77, 79, 81, 84, 86][i], 0.13, 0.3, 11))
+at(25 * B + 1.25, (t) => {
+  bell(t, 89, 0.15, 2)
+  bell(t + 0.05, 93, 0.1, 2)
+})
+;[28, 28.5, 29].forEach((b, i) =>
+  at(b * B, (t) => {
+    kick(t, 1.2)
+    impact(t, 0.5)
+    clap(t, 0.4)
+    bell(t, [72, 74, 77][i], 0.12, 5)
+  }),
+)
+at(29 * B, (t) => riser(t, t + 0.5 * B, 0.3))
+// finale: the end card lands
+at(29.5 * B, (t) => {
+  const hold = DUR - t - 0.25
+  kick(t, 1.3)
+  impact(t, 1.0)
+  pad(t, hold, VAR.minor ? [50, 62, 65, 69, 74, 77] : [53, 65, 69, 72, 77, 81], 0.11, 0.05)
+  bass(t, hold + 0.05, VAR.minor ? 26 : 29, 0.3)
+  ;(VAR.minor ? [74, 77, 81, 86, 89] : [77, 81, 84, 89, 93]).forEach((m, i) => bell(t + i * 0.07, m, 0.09, 1.5))
+  for (let i = 0; i < 12 && t + 0.4 + (i * B) / 4 < DUR - 0.3; i++)
+    pluck(
+      t + 0.4 + (i * B) / 4,
+      [89, 84, 81, 77][i % 4] + (i > 7 ? -12 : 0),
+      0.06 * (1 - i / 14),
+      i % 2 ? 0.6 : -0.6,
+      8,
+    )
+})
 
 // ---------- sidechain on music bus (approx: duck everything except kicks by envelope) ----------
 // (applied to reverb only, keeps it tidy)
@@ -401,5 +452,5 @@ for (let i = 0; i < N; i++) {
   buf.writeInt16LE(Math.round(l * 32767), 44 + i * 4)
   buf.writeInt16LE(Math.round(r * 32767), 46 + i * 4)
 }
-fs.writeFileSync(new URL('music.wav', import.meta.url), buf)
+fs.writeFileSync(new URL(`music-${ALT}.wav`, import.meta.url), buf)
 console.log('ok')
