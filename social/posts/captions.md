@@ -70,3 +70,13 @@ Tap "couldn't find it" and the item stays on your list for next time, instead of
 A shared shopping list that's free and needs no sign-up: link in bio
 
 #shoppinglist #outofstock #groceryshopping #weeklyshop #lifehacks
+
+## ../reel/reel.mp4: Reel
+
+Forgot the bananas. Again. 🍌
+
+we need bananas is a shared shopping list with no app and no sign-up. Start a list, send the three words to whoever you shop with, and it syncs live between your phones.
+
+Link in bio 👆
+
+#shoppinglist #groceryshopping #weeklyshop #lifehacks #couplelife
