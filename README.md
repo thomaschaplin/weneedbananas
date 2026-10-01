@@ -27,6 +27,7 @@ npm test           # unit tests (parser, aisles, slugs, CRDT merge)
 npm run build      # typecheck + vite build + prerender
 npm run test:e2e   # Playwright against the built site, incl. two-device WebRTC sync with a mock relay
 npm run images     # regenerate icons and og.png
+node scripts/make-social.mjs  # regenerate Instagram images in social/ (captions in social/posts/captions.md)
 npm run format     # Prettier (format:check to verify only)
 ```
 

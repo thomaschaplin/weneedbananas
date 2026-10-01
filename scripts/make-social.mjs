@@ -1,5 +1,5 @@
-// Renders Instagram images: 1080x1920 stories to public/stories/story-N.png and
-// 1080x1350 feed posts to public/posts/post-N.png.
+// Renders Instagram images: 1080x1920 stories to social/stories/story-N.png and
+// 1080x1350 feed posts to social/posts/post-N.png.
 // Run with: node scripts/make-social.mjs
 // Every story keeps the top ~250px and bottom ~290px clear for Instagram's UI,
 // and leaves a gap above the footer where a link sticker can sit. Posts keep
@@ -9,7 +9,7 @@ import { mkdirSync, readFileSync } from 'node:fs'
 
 const svg = readFileSync(new URL('../public/favicon.svg', import.meta.url), 'utf8')
 const dir = (name) => {
-  const path = new URL(`../public/${name}/`, import.meta.url).pathname
+  const path = new URL(`../social/${name}/`, import.meta.url).pathname
   mkdirSync(path, { recursive: true })
   return path
 }
@@ -365,6 +365,6 @@ for (const [name, folder, list, height] of [
     await tab.setContent(html)
     await tab.screenshot({ path: `${out}${name}-${i + 1}.png` })
   }
-  console.log(`${list.length} images written to public/${folder}/`)
+  console.log(`${list.length} images written to social/${folder}/`)
 }
 await browser.close()
