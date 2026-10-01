@@ -1,5 +1,5 @@
 // Renders Instagram images: 1080x1920 stories to social/stories/story-N.png and
-// 1080x1350 feed posts to social/posts/post-N.png.
+// 1080x1350 feed posts to social/posts/post-N.png, and a 1080x1080 profile picture to social/profile.png.
 // Run with: node scripts/make-social.mjs
 // Every story keeps the top ~250px and bottom ~290px clear for Instagram's UI,
 // and leaves a gap above the footer where a link sticker can sit. Posts keep
@@ -367,4 +367,13 @@ for (const [name, folder, list, height] of [
   }
   console.log(`${list.length} images written to social/${folder}/`)
 }
+
+// Profile picture: the logo's banana on full-bleed yellow, sized to sit inside Instagram's circular crop.
+await tab.setViewportSize({ width: 1080, height: 1080 })
+await tab.setContent(`
+<body style="margin:0;width:1080px;height:1080px;background:${BANANA};display:grid;place-items:center">
+  ${svg.replace(/<rect[^>]*\/>/, '').replace('<svg ', '<svg width="940" height="940" style="margin:30px 0 0 20px" ')}
+</body>`)
+await tab.screenshot({ path: `${dir('.')}profile.png` })
+console.log('profile picture written to social/profile.png')
 await browser.close()
