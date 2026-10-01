@@ -780,6 +780,117 @@
         opacity: 0;
         pointer-events: none;
       }
+
+      /* ---------- vertical 9:16 (Instagram Reels) ---------- */
+      html.vert,
+      html.vert body {
+        width: 1080px;
+        height: 1920px;
+      }
+      .vert #s1 .title {
+        font-size: 104px;
+      }
+      .vert #s2 .line1 {
+        white-space: normal;
+        width: 620px;
+        text-align: center;
+        font-size: 64px;
+        line-height: 1.2;
+      }
+      .vert #s2 .words {
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+      }
+      .vert #s2 .word {
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+      }
+      .vert #s2 .word .e {
+        margin-bottom: 0;
+        font-size: 130px;
+      }
+      .vert #s2 .word .w {
+        font-size: 190px;
+      }
+      .vert #s2 .pill {
+        font-size: 38px;
+        padding: 20px 32px;
+      }
+      .vert #s2 .cap {
+        font-size: 40px;
+      }
+      .vert .h-big {
+        font-size: 112px;
+      }
+      .vert .sub {
+        font-size: 34px;
+      }
+      .vert #s4 .h {
+        white-space: normal;
+        width: 1000px;
+        text-align: center;
+        font-size: 110px;
+        line-height: 1.05;
+      }
+      .vert #s5 .h {
+        white-space: normal;
+        width: 960px;
+        text-align: center;
+        font-size: 76px;
+        line-height: 1.15;
+      }
+      .vert .kbadge {
+        font-size: 26px;
+        padding: 10px 18px;
+      }
+      .vert #s6 .h {
+        font-size: 130px;
+      }
+      .vert #s6 .sub2 {
+        font-size: 34px;
+      }
+      .vert #ringbox {
+        transform-origin: 0 0;
+      }
+      .vert .card {
+        font-size: 170px;
+        white-space: normal;
+        text-align: center;
+        line-height: 0.95;
+        padding: 0 60px;
+        letter-spacing: -5px;
+      }
+      .vert #s7end .url {
+        font-size: 96px;
+        letter-spacing: -3px;
+      }
+      .vert #s7end .tag {
+        white-space: normal;
+        width: 700px;
+        text-align: center;
+        line-height: 1.25;
+      }
+      .vert .bar {
+        height: 2600px;
+        top: -340px;
+      }
+      .vert #hud .tl,
+      .vert #hud .tr {
+        top: 150px;
+      }
+      .vert #hud .bl {
+        top: 190px;
+        bottom: auto;
+      }
+      .vert #hud .br {
+        display: none;
+      }
+      .vert #prog {
+        top: 0;
+        bottom: auto;
+      }
     </style>
   </head>
   <body>
@@ -1027,8 +1138,72 @@
       const FPS = 60,
         DUR = 15,
         B = 60 / 128
-      const W = 1920,
-        H = 1080
+      const q = new URLSearchParams(location.search)
+      // ?v=1 lays everything out at 1080x1920 for Instagram Reels, keeping key content clear of the app's overlays.
+      const V = q.has('v')
+      const W = V ? 1080 : 1920,
+        H = V ? 1920 : 1080
+      const LY = V
+        ? {
+            logo: [540, 760],
+            ph3: [310, 620],
+            scatter: [120, 840, 650],
+            s4c: [540, 900],
+            qa: [0, -150],
+            qb: [0, 150],
+            iris: [540, 900, 1250],
+            wire: 'M 340 1190 C 400 1450, 680 1450, 740 1190',
+            conf: [540, 1400],
+            ringS: 0.6,
+            pos: {
+              logo: [540, 760],
+              s1title: [540, 1040],
+              s1sub: [540, 1150],
+              ghost: [540, 900],
+              line1: [540, 430],
+              words: [540, 900],
+              pill: [540, 1320],
+              s2cap: [540, 1430],
+              s3h: [70, 230],
+              ph3: [310, 620],
+              mq1: [540, 200],
+              mq2: [540, 1760],
+              s4h: [540, 420],
+              qa: [540, 900],
+              qb: [540, 900],
+              t1: [540, 1180],
+              t2: [540, 1280],
+              t3: [540, 1380],
+              s4cap: [540, 1050],
+              srv: [540, 640],
+              x1: [540, 640],
+              x2: [540, 640],
+              stamp: [540, 800],
+              mpL: [50, 900],
+              mpR: [740, 900],
+              kb: [540, 1100],
+              s5h: [540, 330],
+              s6h: [70, 230],
+              ringbox: [70, 450],
+              ph6: [310, 640],
+              done6: [540, 1430],
+              logo2: [540, 650],
+              url: [540, 900],
+              tag: [540, 1040],
+              pills: [540, 1200],
+            },
+          }
+        : {
+            logo: [960, 470],
+            ph3: [1110, 90],
+            scatter: [780, 1000, 170],
+            s4c: [960, 510],
+            qa: [-330, 0],
+            qb: [360, 0],
+            iris: [960, 510, 1150],
+            conf: [1340, 860],
+            ringS: 1,
+          }
       const $ = (id) => document.getElementById(id)
       const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x))
       const P = (t, a, b) => clamp((t - a) / (b - a))
@@ -1079,11 +1254,27 @@
       const IMP = []
 
       // ---------------- build ----------------
+      if (V) {
+        document.documentElement.classList.add('vert')
+        for (const [id, [x, y]] of Object.entries(LY.pos)) {
+          $(id).style.left = x + 'px'
+          $(id).style.top = y + 'px'
+        }
+        $('wire').setAttribute('d', LY.wire)
+        $('wire').parentNode.setAttribute('width', W)
+        $('wire').parentNode.setAttribute('height', H)
+      }
+      document.querySelectorAll('#s1 .ring').forEach((d) => {
+        d.style.left = LY.logo[0] + 'px'
+        d.style.top = LY.logo[1] + 'px'
+      })
       // S1 rays + title
       const rays = []
       for (let i = 0; i < 16; i++) {
         const d = document.createElement('div')
         d.className = 'ray'
+        d.style.left = LY.logo[0] + 'px'
+        d.style.top = LY.logo[1] + 'px'
         $('rays').appendChild(d)
         rays.push(d)
       }
@@ -1154,7 +1345,15 @@
         d.innerHTML = `<span class="tk"></span><span class="e">${e}</span><span>${n}</span>${q ? `<span class="q">${q}</span>` : ''}`
         $('chips').appendChild(d)
         const k = ORDER.indexOf(i)
-        return { d, ty: y, tx: 1340, sx: 780 + rnd() * 1000, sy: 170 + k * 100 + rnd() * 40, sr: (rnd() - 0.5) * 40, k }
+        return {
+          d,
+          ty: y + LY.ph3[1] - 90,
+          tx: LY.ph3[0] + 230,
+          sx: LY.scatter[0] + rnd() * LY.scatter[1],
+          sy: LY.scatter[2] + k * 100 + rnd() * 40,
+          sr: (rnd() - 0.5) * 40,
+          k,
+        }
       })
 
       // S4 marquees + bursts
@@ -1238,7 +1437,7 @@
       const strips = []
       for (let i = 0; i < 8; i++) {
         const d = document.createElement('div')
-        d.style.cssText = `position:absolute;top:0;left:${i * 240}px;width:242px;height:1080px;background:#2f8f46`
+        d.style.cssText = `position:absolute;top:0;left:${i * 240}px;width:242px;height:${H}px;background:#2f8f46`
         $('strips').appendChild(d)
         strips.push(d)
       }
@@ -1429,7 +1628,7 @@
           const t0 = 10 * B
           // whip out to S4
           const wk = E.inOut(P(t, 16 * B - 0.17, 16 * B + 0.17))
-          $('s3').style.transform = `translateX(${-1920 * wk}px)`
+          $('s3').style.transform = `translateX(${-W * wk}px)`
           $('s3').style.filter = wk > 0 && wk < 1 ? `blur(${Math.sin(wk * Math.PI) * 18}px)` : ''
           const w1 = P(t, t0 + 0.12, t0 + 0.55),
             w2 = P(t, t0 + 0.2, t0 + 0.63)
@@ -1474,7 +1673,7 @@
           const t0 = 16 * B
           const wk = E.inOut(P(t, t0 - 0.17, t0 + 0.17))
           const iris = P(t, 20 * B - 0.12, 20 * B + 0.25)
-          $('s4').style.transform = `translateX(${1920 * (1 - wk)}px)`
+          $('s4').style.transform = `translateX(${W * (1 - wk)}px)`
           $('s4').style.filter = wk > 0 && wk < 1 ? `blur(${Math.sin(wk * Math.PI) * 18}px)` : ''
           T($('mq1'), { x: -((t * 180) % 1300) })
           T($('mq2'), { x: ((t * 180) % 1300) - 300 })
@@ -1484,23 +1683,24 @@
           const ina = P(t, t0 + 0.12, t0 + 0.5),
             inb = P(t, t0 + 0.2, t0 + 0.58)
           const col = E.inExpo(P(t, t0 + 0.68, 18 * B - 0.02))
-          const ax = lerp(lerp(-1300, -330, E.outExpo(ina)), 0, col)
-          const bx = lerp(lerp(1300, 360, E.outExpo(inb)), 0, col)
+          const ax = lerp(lerp(-1300, LY.qa[0], E.outExpo(ina)), 0, col)
+          const bx = lerp(lerp(1300, LY.qb[0], E.outExpo(inb)), 0, col)
           const merged = t >= 18 * B - 0.02
           T($('qa'), {
             x: ax,
+            y: LY.qa[1] * (1 - col),
             r: lerp(-14, -3, E.outExpo(ina)) * (1 - col),
             o: 1,
             s: merged ? 1 + Math.exp(-(t - 18 * B) * 9) * 0.25 : 1,
           })
-          T($('qb'), { x: bx, r: lerp(14, 3, E.outExpo(inb)) * (1 - col), o: merged ? 0 : 1 })
+          T($('qb'), { x: bx, y: LY.qb[1] * (1 - col), r: lerp(14, 3, E.outExpo(inb)) * (1 - col), o: merged ? 0 : 1 })
           const nk = P(t, 18 * B, 18 * B + 0.3)
           $('qan').textContent = merged ? Math.round(lerp(6, 12, E.outCubic(nk))) : 6
           // burst
           bursts.forEach((d, i) => {
             const k = P(t, 18 * B - 0.02 + i * 0.06, 18 * B + 0.5 + i * 0.06)
             const s = 1 + E.outExpo(k) * (40 + i * 18)
-            d.style.transform = `translate(950px,500px) scale(${s})`
+            d.style.transform = `translate(${LY.s4c[0] - 10}px,${LY.s4c[1] - 10}px) scale(${s})`
             d.style.opacity = k > 0 && k < 1 ? 1 - k : 0
             d.style.borderWidth = (6 / s) * (3 - i) + 'px'
           })
@@ -1508,7 +1708,7 @@
             const a = (i / sparks.length) * Math.PI * 2
             const k = P(t, 18 * B - 0.02, 18 * B + 0.45)
             const dist = 200 + E.outExpo(k) * 380
-            d.style.transform = `translate(${955 + Math.cos(a) * dist}px,${496 + Math.sin(a) * dist * 0.75}px) rotate(${(a * 180) / Math.PI + 90}deg) scaleY(${1 - k})`
+            d.style.transform = `translate(${LY.s4c[0] - 5 + Math.cos(a) * dist}px,${LY.s4c[1] - 14 + Math.sin(a) * dist * 0.75}px) rotate(${(a * 180) / Math.PI + 90}deg) scaleY(${1 - k})`
             d.style.opacity = k > 0 && k < 1 ? 1 : 0
           })
           ;['t1', 't2', 't3'].forEach((id, i) => {
@@ -1523,7 +1723,7 @@
         if (on.s5) {
           const t0 = 20 * B
           const iris = E.inOutQuint(P(t, t0 - 0.12, t0 + 0.22))
-          $('s5').style.clipPath = iris < 1 ? `circle(${iris * 1150}px at 960px 510px)` : ''
+          $('s5').style.clipPath = iris < 1 ? `circle(${iris * LY.iris[2]}px at ${LY.iris[0]}px ${LY.iris[1]}px)` : ''
           const lk = P(t, t0, t0 + 0.45),
             rk = P(t, t0 + 0.06, t0 + 0.51)
           T($('mpL'), { x: lerp(-700, 0, E.outExpo(lk)), r: lerp(-25, -5, E.outExpo(lk)) })
@@ -1581,7 +1781,7 @@
           strips.forEach((d, i) => {
             const k = P(t, a + i * 0.025, a + 0.2 + i * 0.025)
             const out = P(t, 25 * B + 0.0, 25 * B + 0.01)
-            d.style.transform = `translateY(${lerp(1080, 0, E.outCubic(k))}px)`
+            d.style.transform = `translateY(${lerp(H, 0, E.outCubic(k))}px)`
             d.style.opacity = out >= 1 ? 0 : 1
             if (k > 0 && out < 1) any = true
           })
@@ -1598,7 +1798,7 @@
           T($('ph6'), { y: lerp(1000, 0, E.outExpo(pk)), r: lerp(-10, 0, E.outExpo(pk)) })
           const tk = P(t, t0 + 0.12, t0 + 0.35)
           T($('toast6'), { y: lerp(-100, 0, E.outBack(tk)), o: tk > 0 ? 1 : 0 })
-          T($('ringbox'), { o: P(t, t0 + 0.1, t0 + 0.3), s: tw(t, t0 + 0.1, t0 + 0.4, 0.7, 1, E.outBack) })
+          T($('ringbox'), { o: P(t, t0 + 0.1, t0 + 0.3), s: tw(t, t0 + 0.1, t0 + 0.4, 0.7, 1, E.outBack) * LY.ringS })
           let doneCount = 0
           srows.forEach((d, i) => {
             const rk = P(t, t0 + 0.08 + i * 0.03, t0 + 0.35 + i * 0.03)
@@ -1664,12 +1864,12 @@
               s = c.s
             if (t >= tb && t < 28 * B) {
               const d = t - tb
-              x = 1340 + c.vx * d * 0.6
-              y = 860 + c.vy * d + 1900 * d * d
+              x = LY.conf[0] + c.vx * d * 0.6
+              y = LY.conf[1] + c.vy * d + 1900 * d * d
               r = c.vr * d
             } else if (t >= tend) {
               const d = t - tend - c.fd
-              x = c.fx + Math.sin(d * 2 + i) * 40
+              x = (c.fx * W) / 1920 + Math.sin(d * 2 + i) * 40
               y = -100 + d * 420 * (0.8 + c.fs * 0.6)
               r = d * c.vr * 0.4
               s = c.fs * 0.8
@@ -1708,7 +1908,6 @@
         .then(() => document.fonts.load('64px Emoji', '🍌🥦🍋🍴💡🛒🔒🔑🎉'))
         .then(() => document.fonts.load('700 64px Fredoka'))
         .then(() => document.fonts.load('700 30px Mono'))
-      const q = new URLSearchParams(location.search)
       if (q.has('t')) render(parseFloat(q.get('t')))
       else if (!q.has('static')) {
         // live preview loop

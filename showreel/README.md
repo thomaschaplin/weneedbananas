@@ -1,16 +1,20 @@
 # Showreel
 
-`weneedbananas-showreel.mp4` is a 15-second motion-graphics reel of the site (1920×1080, 60fps, with sound).
+A 15-second motion-graphics reel of the site, with sound, in two formats:
+
+- `weneedbananas-showreel.mp4`: 1920×1080 landscape, 60fps.
+- `weneedbananas-showreel-vertical.mp4`: 1080×1920 (9:16) for Instagram Reels, TikTok and YouTube Shorts. Text and key content stay out of the top ~150px and bottom ~420px, where the apps put their own buttons and caption.
 
 Everything is generated from code in this folder:
 
-- `reel.html`: the animation. `render(t)` draws the frame at time `t` (seconds), so any frame can be redrawn exactly. Open it in a browser to watch a live loop (no sound), or add `?t=7.2` to freeze on one moment.
+- `reel.html`: the animation. `render(t)` draws the frame at time `t` (seconds), so any frame can be redrawn exactly. Open it in a browser to watch a live loop (no sound), add `?t=7.2` to freeze on one moment, or `?v=1` for the vertical layout.
 - `synth.mjs`: synthesises the 128 BPM soundtrack to `music.wav`. Scene cuts and hits sit on its beats (`B = 60 / 128` in both files).
 - `build.mjs`: renders every frame with Playwright, then muxes video and audio with ffmpeg.
 
 ```sh
-npm run showreel             # full render, about 3 minutes; needs ffmpeg
-npm run showreel -- 2.5 7.2  # just write stills at those times to showreel/stills/
+npm run showreel                       # both formats, about 3 minutes each; needs ffmpeg
+npm run showreel -- vertical           # one format: landscape or vertical
+npm run showreel -- vertical 2.5 7.2   # just write stills at those times to showreel/stills/
 ```
 
 On first run it downloads Noto Color Emoji (25 MB, gitignored) into `fonts/`. Set `CHROMIUM_PATH` to use a specific Chromium.
