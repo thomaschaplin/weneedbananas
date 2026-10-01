@@ -27,8 +27,8 @@ npm test           # unit tests (parser, aisles, slugs, CRDT merge)
 npm run build      # typecheck + vite build + prerender
 npm run test:e2e   # Playwright against the built site, incl. two-device WebRTC sync with a mock relay
 npm run images     # regenerate icons and og.png
-node scripts/make-social.mjs  # regenerate Instagram images in social/ (captions in social/posts/captions.md)
-node scripts/make-reel.mjs    # render the Instagram reel to social/reel/reel.mp4 (needs ffmpeg)
+node scripts/make-social.mjs  # regenerate Instagram images in social/ (captions in social/captions.md)
+node scripts/make-reel.mjs    # render the Instagram reels to social/reels/ (needs ffmpeg; pass numbers to render only some)
 npm run format     # Prettier (format:check to verify only)
 ```
 

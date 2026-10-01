@@ -1,8 +1,8 @@
-# Instagram post captions
+# Instagram captions
 
-One caption per image in this folder. Every caption points to the link in bio, so make sure `https://weneedbananas.com` is in the profile bio before posting. Post 1 and 2 first: they explain the three-words idea the rest build on.
+One caption per post in `posts/` and per reel in `reels/`. Every caption points to the link in bio, so make sure `https://weneedbananas.com` is in the profile bio before posting. Post 1 and 2 first: they explain the three-words idea the rest build on.
 
-## post-1.png: Three words
+## posts/post-1.png: Three words
 
 Meet the shopping list you share with three words. 🍌
 
@@ -16,7 +16,7 @@ Start a list: link in bio 👆
 
 #shoppinglist #groceryshopping #mealplanning #familyorganisation #lifehacks
 
-## post-2.png: No account, no password
+## posts/post-2.png: No account, no password
 
 No sign-up form. No password to forget. No "verify your email".
 
@@ -26,7 +26,7 @@ Free, at weneedbananas.com (link in bio) 🍌
 
 #nosignup #shoppinglist #simpleliving #householdtips #sharedlist
 
-## post-3.png: 6 eggs twice = 12 eggs
+## posts/post-3.png: 6 eggs twice = 12 eggs
 
 You both added eggs. Now you've got 12 eggs, not two lines that both say "eggs". 🥚
 
@@ -36,7 +36,7 @@ Try it: link in bio
 
 #shoppinglist #groceryhaul #weeklyshop #mealprep #couplelife
 
-## post-4.png: Shop mode
+## posts/post-4.png: Shop mode
 
 Shop mode is for when you're actually in the shop. 🛒
 
@@ -49,7 +49,7 @@ Free, no sign-up: link in bio
 
 #weeklyshop #groceryshopping #supermarket #shoppinghacks #organisedhome
 
-## post-5.png: Someone's at the shop
+## posts/post-5.png: Someone's at the shop
 
 "Wait, are you at the shop? Can you grab…" 📱
 
@@ -61,7 +61,7 @@ Link in bio 🍌
 
 #shoppinglist #familylife #flatmates #householdhacks #weeklyshop
 
-## post-6.png: Out of stock
+## posts/post-6.png: Out of stock
 
 Sold out of avocados again? 🥑
 
@@ -71,7 +71,7 @@ A shared shopping list that's free and needs no sign-up: link in bio
 
 #shoppinglist #outofstock #groceryshopping #weeklyshop #lifehacks
 
-## ../reel/reel.mp4: Reel
+## reels/reel-1.mp4: Forgot the bananas
 
 Forgot the bananas. Again. 🍌
 
@@ -80,3 +80,53 @@ we need bananas is a shared shopping list with no app and no sign-up. Start a li
 Link in bio 👆
 
 #shoppinglist #groceryshopping #weeklyshop #lifehacks #couplelife
+
+## reels/reel-2.mp4: Group chat chaos
+
+"Which milk??" 🥛
+
+If your shopping list lives in a group chat, this one's for you. Put it on one shared list instead: everyone adds to it, and everyone sees changes live.
+
+Free, no sign-up: link in bio 🍌
+
+#shoppinglist #groupchat #relatable #weeklyshop #couplelife
+
+## reels/reel-3.mp4: 6 eggs + 6 eggs
+
+Add eggs twice and you get 12 eggs, not two lines of eggs. 🥚
+
+we need bananas understands quantities like "2 pints milk", "500g mince" and "bananas x6".
+
+Try it: link in bio
+
+#shoppinglist #mealprep #weeklyshop #groceryshopping #lifehacks
+
+## reels/reel-4.mp4: Sorted by aisle
+
+Watch your list sort itself. 🗺️
+
+Fruit & veg, bakery, dairy… items group themselves in the order you walk the shop, so you get round in one lap. You can reorder the aisles to match your shop.
+
+Link in bio 🍌
+
+#shoppinglist #supermarket #organisedhome #weeklyshop #shoppinghacks
+
+## reels/reel-5.mp4: Someone's at the shop
+
+The best time to remember the loo roll? While someone's still at the shop. 🧻
+
+When anyone on your list turns on shop mode, everyone else sees "Sam is at the shop". Add it, and it lands on their list straight away.
+
+Link in bio 🛒
+
+#familylife #flatmates #shoppinglist #householdhacks #relatable
+
+## reels/reel-6.mp4: Shop mode countdown
+
+7 left… 3 left… all got! 🎉
+
+Shop mode gives you big one-thumb buttons, keeps your screen awake, and counts down what's left, so you're done in one lap.
+
+Free, no sign-up: link in bio
+
+#weeklyshop #groceryshopping #satisfying #shoppinglist #organisedhome
