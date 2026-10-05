@@ -140,6 +140,30 @@ test('a device that opens the list after the first has gone still gets the items
   await b.close()
 })
 
+test('warns before a list that lives on one device could be lost', async ({ browser }) => {
+  const relay = new MockRelay()
+  const slug = 'pear.drum.kite'
+  const ctx = await browser.newContext()
+  await relay.attach(ctx)
+  const page = await ctx.newPage()
+
+  await page.goto(`/${slug}`)
+  await add(page, 'milk')
+  await page.getByRole('button', { name: 'Sync status: Up to date' }).click({ timeout: 15_000 })
+  const sheet = page.getByRole('dialog', { name: 'Sync' })
+  await expect(sheet).toContainText('Only this device has this list.')
+  await expect(sheet).toContainText(/relay copy is kept until .+ \(in 30 days\)/)
+
+  // A list not opened here for 26 days gets a nudge on the home page.
+  await page.evaluate((s) => {
+    const old = Date.now() - 26 * 24 * 60 * 60 * 1000
+    localStorage.setItem('wnb:recent', JSON.stringify([{ slug: s, openedAt: old, todo: 1 }]))
+  }, slug)
+  await page.goto('/')
+  await expect(page.getByRole('link', { name: /pear\.drum\.kite/ })).toContainText('Open to keep it safe · 4 days left')
+  await ctx.close()
+})
+
 test('shop mode asks for your name and confirms it saved', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Start a new list' }).click()
@@ -198,6 +222,27 @@ test('theme toggle overrides the system setting and persists', async ({ page }) 
   expect(await page.evaluate(() => localStorage.getItem('wnb:theme'))).toBeNull()
 })
 
+test('a usual can be forgotten, with undo', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Start a new list' }).click()
+  await expect(page).toHaveURL(SLUG)
+  await add(page, 'mlik')
+  await add(page, 'mlik')
+  await page.getByRole('tab', { name: /at the shop/i }).click()
+  await page.getByRole('button', { name: 'Got mlik' }).click()
+  await page.getByRole('button', { name: /Done shopping/ }).click()
+  await page.getByRole('tab', { name: /plan/i }).click()
+
+  const usuals = page.getByLabel('Your usuals')
+  await expect(usuals.getByRole('button', { name: '+ mlik' })).toBeVisible()
+  await usuals.getByRole('button', { name: 'Forget mlik' }).click()
+  await expect(page.getByRole('status').filter({ hasText: 'Forgot mlik' })).toBeVisible()
+  await expect(usuals).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Undo' }).click()
+  await expect(page.getByLabel('Your usuals').getByRole('button', { name: '+ mlik' })).toBeVisible()
+})
+
 for (const width of [320, 360]) {
   test.describe(`${width}px phones`, () => {
     test.use({ viewport: { width, height: 640 } })
@@ -212,3 +257,163 @@ for (const width of [320, 360]) {
     }
   })
 }
+
+test('copy the list as plain text, grouped by aisle', async ({ page, context }) => {
+  await new MockRelay().attach(context)
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await page.goto('/lemon.fork.bulb')
+  await add(page, '6 bananas, 2 pints milk (semi-skimmed), bread')
+  await expect(page.locator('.item')).toHaveCount(3)
+  await page.getByRole('tab', { name: /at the shop/i }).click()
+  await page.getByRole('button', { name: 'Got bread' }).click()
+
+  await page.getByRole('button', { name: 'Share list lemon.fork.bulb' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Share this list' })
+  await sheet.getByRole('button', { name: 'Copy items as text' }).click()
+  await expect(sheet.getByRole('button', { name: 'Copied ✓' })).toBeVisible()
+  const text = await page.evaluate(() => navigator.clipboard.readText())
+  expect(text).toBe(
+    [
+      'Shopping list (lemon.fork.bulb)',
+      '',
+      '🥦 Fruit & veg',
+      '- 6 bananas',
+      '',
+      '🧀 Dairy, eggs & chilled',
+      '- 2 pints milk (semi-skimmed)',
+      '',
+      'Shared list: https://weneedbananas.com/lemon.fork.bulb',
+    ].join('\n'),
+  )
+})
+
+test('text shared into the app goes into the chosen list for confirmation', async ({ page, context }) => {
+  await new MockRelay().attach(context)
+  await page.goto('/apple.chair.lamp')
+  await expect(page.getByText('Nothing on the list yet')).toBeVisible()
+
+  const shared = '100g flour\n2 eggs\nhttps://example.com/pancakes'
+  await page.goto(`/share-target?title=Pancakes&text=${encodeURIComponent(shared)}`)
+  // The shared text is gone from the address bar straight away.
+  await expect(page).toHaveURL(/\/share-target$/)
+  await expect(page.getByRole('heading', { name: 'Add to which list?' })).toBeVisible()
+  await expect(page.getByText('2 items to check before adding')).toBeVisible()
+  await page.getByRole('link', { name: /apple\.chair\.lamp/ }).click()
+
+  await expect(page).toHaveURL(/\/apple\.chair\.lamp$/)
+  await expect(page.getByLabel('Add an item')).toHaveValue('100g flour, 2 eggs')
+  await expect(page.locator('.item')).toHaveCount(0)
+  await page.getByLabel('Add an item').press('Enter')
+  await expect(page.locator('.item')).toHaveCount(2)
+
+  // Starting a new list from a share works too.
+  await page.goto(`/share-target?text=${encodeURIComponent('bananas')}`)
+  await page.getByRole('button', { name: 'Start a new list' }).click()
+  await expect(page).toHaveURL(SLUG)
+  await expect(page.getByLabel('Add an item')).toHaveValue('bananas')
+})
+
+test('share target page is noindex and in the manifest', async ({ request }) => {
+  const html = await (await request.get('/share-target?text=eggs')).text()
+  expect(html).toContain('noindex')
+  const manifest = await (await request.get('/manifest.webmanifest')).json()
+  expect(manifest.share_target).toMatchObject({ action: '/share-target', method: 'GET' })
+})
+
+test('swipe right ticks an item, swipe left removes it with undo', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Start a new list' }).click()
+  await expect(page).toHaveURL(SLUG)
+  await add(page, 'bananas, apples, sourdough')
+  const row = (name: string) => page.locator('.item', { hasText: name })
+  await expect(row('sourdough')).toBeVisible()
+
+  async function swipe(name: string, fraction: number) {
+    const box = (await row(name).boundingBox())!
+    const y = box.y + box.height / 2
+    const x0 = box.x + box.width / 2
+    await page.mouse.move(x0, y)
+    await page.mouse.down()
+    await page.mouse.move(x0 + box.width * fraction, y, { steps: 12 })
+    await page.mouse.up()
+  }
+
+  // A short, slow drag springs back without doing anything (or opening the editor).
+  await swipe('bananas', 0.15)
+  await expect(page.getByRole('button', { name: 'Got bananas' })).toHaveAttribute('aria-pressed', 'false')
+  await expect(page.locator('dialog[open]')).toHaveCount(0)
+
+  // Plan mode: swipe right ticks, and the drag doesn't open the editor.
+  await swipe('bananas', 0.45)
+  await expect(page.getByRole('button', { name: 'Put bananas back on the list' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.locator('dialog[open]')).toHaveCount(0)
+
+  // Shop mode: swipe right again unticks (apples keep the aisle open so bananas stays shown).
+  await page.getByRole('tab', { name: /at the shop/i }).click()
+  await swipe('bananas', 0.45)
+  await expect(page.getByRole('button', { name: 'Got bananas' })).toHaveAttribute('aria-pressed', 'false')
+
+  // Swipe left removes, and Undo brings it back.
+  await swipe('sourdough', -0.45)
+  await expect(row('sourdough')).toHaveCount(0)
+  await expect(page.getByText('Removed sourdough')).toBeVisible()
+  await page.getByRole('button', { name: 'Undo' }).click()
+  await expect(row('sourdough')).toBeVisible()
+})
+
+test('moving a list to new words leaves the old words with only a notice', async ({ browser }) => {
+  const relay = new MockRelay()
+  const slug = 'pear.drum.kite'
+  const escaped = (s: string) => new RegExp(s.replace(/\./g, '\\.'))
+  const a = await browser.newContext()
+  const b = await browser.newContext()
+  await relay.attach(a)
+  await relay.attach(b)
+  const pa = await a.newPage()
+  const pb = await b.newPage()
+
+  await pa.goto(`/${slug}`)
+  await add(pa, 'eggs, bread, bananas')
+  await pb.goto(`/${slug}`)
+  await expect(pb.getByRole('button', { name: /Sync status: Live with 1/ })).toBeVisible({ timeout: 30_000 })
+  await expect(pb.locator('.item')).toHaveCount(3)
+
+  await pa.getByRole('button', { name: 'List settings' }).click()
+  const settings = pa.getByRole('dialog', { name: 'List settings' })
+  await settings.getByRole('button', { name: 'Move to new words' }).click()
+  await expect(settings).toContainText('Everyone you want to keep on the list needs the new words')
+  await settings.getByRole('button', { name: 'Move', exact: true }).click()
+
+  // The mover lands on the new words, with the items, ready to share them.
+  await expect(pa).not.toHaveURL(escaped(slug), { timeout: 15_000 })
+  await expect(pa).toHaveURL(SLUG)
+  const next = new URL(pa.url()).pathname.slice(1)
+  await expect(pa.getByRole('dialog', { name: 'Share this list' })).toContainText(next.split('.')[2])
+  await expect(pa.locator('.item')).toHaveCount(3)
+
+  // Whoever is still on the old words sees it has moved, but not where to.
+  await expect(pb.getByText('This list has been moved')).toBeVisible()
+  await expect(pb.getByText('Ask whoever moved it for the new words.')).toBeVisible()
+  await expect(pb.locator('.item')).toHaveCount(0)
+  await expect(pb.getByLabel('Add an item')).toHaveCount(0)
+  expect(await pb.content()).not.toContain(next)
+
+  // The mover's recent lists swap the old words for the new.
+  await pa.goto('/')
+  await expect(pa.getByRole('link', { name: escaped(next) })).toBeVisible()
+  await expect(pa.getByRole('link', { name: escaped(slug) })).toHaveCount(0)
+  await a.close()
+  await b.close()
+
+  // A device opening the old words later gets the notice from the mailbox.
+  const c = await browser.newContext()
+  await relay.attach(c)
+  const pc = await c.newPage()
+  await pc.goto(`/${slug}`)
+  await expect(pc.getByText('This list has been moved')).toBeVisible({ timeout: 15_000 })
+  await expect(pc.locator('.item')).toHaveCount(0)
+  await c.close()
+})

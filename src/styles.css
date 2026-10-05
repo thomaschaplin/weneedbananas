@@ -1370,6 +1370,59 @@ h1 {
   color: var(--muted);
 }
 
+/* swipe gestures: the row slides over a coloured action behind it */
+.item {
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.item-fg {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  transition: transform 0.2s ease;
+}
+
+.item.swiping .item-fg {
+  transition: none;
+}
+
+.item.swiping {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.swipe-bg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  font-weight: 750;
+  color: var(--bg);
+  pointer-events: none;
+}
+
+.swipe-right {
+  justify-content: flex-start;
+  background: var(--leaf);
+}
+
+.swipe-left {
+  justify-content: flex-end;
+  background: var(--danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item-fg {
+    transition: none;
+  }
+}
+
 /* shop mode: bigger everything */
 .app.shop {
   --tap: 64px;
@@ -1741,4 +1794,90 @@ h1 {
 
 .sync-info p {
   margin: 0 0 12px;
+}
+
+/* Usual chip with a forget button: the dashed pill wraps both buttons. */
+.chip-group {
+  flex: none;
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 999px;
+  border: 1.5px dashed var(--banana-deep);
+}
+
+.chip-group .chip {
+  border: 0;
+  padding-right: 4px;
+}
+
+.chip-x {
+  min-width: 34px;
+  min-height: 36px;
+  padding: 0 12px 0 6px;
+  border: 0;
+  border-radius: 0 999px 999px 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.chip-x:hover,
+.chip-x:focus-visible {
+  color: inherit;
+}
+
+/* nudges before an unused list's relay copy runs out */
+.recent a:has(.recent-hint) {
+  flex-wrap: wrap;
+}
+
+.recent-hint {
+  flex-basis: 100%;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.keep-safe-alone {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+/* ---------- plain-text export and share target ---------- */
+
+.share-text {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1.5px solid var(--line);
+  text-align: center;
+}
+
+.share-target {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: calc(16px + env(safe-area-inset-top)) 16px 32px;
+}
+
+.share-target h1 {
+  font-size: 1.5rem;
+  margin: 12px 0 8px;
+}
+
+.share-target-preview {
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  max-height: 180px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  font: inherit;
+}
+
+.share-target .btn-big {
+  width: 100%;
 }

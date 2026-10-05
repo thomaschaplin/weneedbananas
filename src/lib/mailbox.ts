@@ -1,6 +1,7 @@
 import { schnorr } from '@noble/secp256k1'
 import * as Y from 'yjs'
 import { deriveSecrets } from './crypto'
+import { EXPIRY_DAYS } from './expiry'
 
 /**
  * Relays that keep the encrypted list snapshot while no device has the list open. Nostr relays accept events
@@ -14,7 +15,7 @@ const D_TAG = 'weneedbananas'
 const VERSION = 'v1:'
 // Relays drop the copy this long after the list was last opened or edited (NIP-40). Every device with the list
 // republishes when it opens it, so only lists nobody uses any more expire.
-export const EXPIRY_SECONDS = 30 * 24 * 60 * 60
+export const EXPIRY_SECONDS = EXPIRY_DAYS * 24 * 60 * 60
 // Relays commonly reject events over 64-128 KB; a shopping list is a few KB.
 const MAX_CONTENT = 60_000
 const PUBLISH_DELAY_MS = 800
@@ -32,6 +33,8 @@ export interface MailboxStatus {
   state: MailboxState
   /** When changes left by another device were last picked up. */
   receivedAt: number | null
+  /** When the newest copy a relay is known to hold expires (ms), if any has been confirmed or fetched. */
+  expiresAt?: number | null
 }
 
 type Listener = (s: MailboxStatus) => void
@@ -143,6 +146,29 @@ export class Mailbox {
     this.flush()
   }
 
+  /**
+   * Send this device's copy now, without waiting for the first fetch (as when the page is hidden), and wait for
+   * a relay to confirm it. Resolves true once a relay holds everything this device has, false on timeout.
+   */
+  async flushNow(timeoutMs = 8_000): Promise<boolean> {
+    const end = Date.now() + timeoutMs
+    const tick = () => new Promise((r) => setTimeout(r, 100))
+    while (!this.secretKey) {
+      if (this.destroyed || Date.now() > end) return false
+      await tick()
+    }
+    this.ready = true
+    if (this.timer) clearTimeout(this.timer)
+    this.timer = null
+    if (this.dirty) await this.publish()
+    for (;;) {
+      const id = this.latest?.id
+      if (!this.dirty && id && this.relays.some((r) => r.ackedId === id)) return true
+      if (this.destroyed || Date.now() > end) return false
+      await tick()
+    }
+  }
+
   destroy(): void {
     this.destroyed = true
     if (this.timer) clearTimeout(this.timer)
@@ -204,8 +230,10 @@ export class Mailbox {
       this.markReady()
       this.updateState()
     } else if (type === 'OK') {
-      if (msg[2] === true) r.ackedId = msg[1] as string
-      else r.rejectedId = msg[1] as string
+      if (msg[2] === true) {
+        r.ackedId = msg[1] as string
+        if (this.latest?.id === r.ackedId) this.noteExpiry(this.latest.created_at + EXPIRY_SECONDS)
+      } else r.rejectedId = msg[1] as string
       this.updateState()
     }
   }
@@ -233,6 +261,8 @@ export class Mailbox {
       return
     }
     if (this.destroyed) return
+    // It decrypted, so it's ours and a relay holds it until then.
+    if (expiry) this.noteExpiry(expiry)
     const before = Y.snapshot(this.doc)
     Y.applyUpdate(this.doc, update, this)
     if (!Y.equalSnapshots(before, Y.snapshot(this.doc))) this.set({ receivedAt: Date.now() })
@@ -241,6 +271,11 @@ export class Mailbox {
     Y.applyUpdate(remote, update)
     if (!Y.equalSnapshots(Y.snapshot(remote), Y.snapshot(this.doc))) this.markDirty()
     remote.destroy()
+  }
+
+  private noteExpiry(seconds: number) {
+    const ms = seconds * 1000
+    if (ms > (this.status.expiresAt ?? 0)) this.set({ expiresAt: ms })
   }
 
   private markReady() {

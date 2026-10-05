@@ -41,7 +41,8 @@ export function createListDoc(doc = new Y.Doc()): ListDoc {
   const history = doc.getMap<HistoryEntry>('history')
   const aisleFor = doc.getMap<string>('aisleFor')
   const meta = doc.getMap<unknown>('meta')
-  const undo = new Y.UndoManager([items, aisleFor, meta], {
+  // History is tracked so undoing an add also rolls back its usuals count, and forgetting a usual can be undone.
+  const undo = new Y.UndoManager([items, history, aisleFor, meta], {
     trackedOrigins: new Set([LOCAL]),
     // Each operation is one transaction, so each is its own undo step.
     captureTimeout: 0,
@@ -99,6 +100,7 @@ function mergeQty(a: Item, b: ParsedItem): { qty: number | null; unit: string | 
 export function addItems(ld: ListDoc, parsed: ParsedItem[]): AddResult {
   const result: AddResult = { added: [], merged: [] }
   const now = Date.now()
+  const touched = new Set<string>()
   ld.doc.transact(() => {
     const existing = allItems(ld)
     for (const p of parsed) {
@@ -140,6 +142,7 @@ export function addItems(ld: ListDoc, parsed: ParsedItem[]): AddResult {
         result.added.push(p.name)
       }
       const h = ld.history.get(key)
+      touched.add(key)
       ld.history.set(key, {
         name: p.name,
         count: (h?.count ?? 0) + 1,
@@ -147,8 +150,42 @@ export function addItems(ld: ListDoc, parsed: ParsedItem[]): AddResult {
         unit: p.unit ?? h?.unit ?? null,
       })
     }
+    pruneHistory(ld, now, touched)
   }, LOCAL)
   return result
+}
+
+/** Most entries kept in history; beyond this the least used are dropped. */
+export const HISTORY_CAP = 200
+/** One-off entries untouched for this long are dropped. */
+export const HISTORY_STALE_MS = 90 * 24 * 60 * 60 * 1000
+
+/**
+ * Keep history bounded: drop one-off entries not seen for 90 days, then cap the
+ * total by usage. Only ever deletes keys, so concurrent prunes on other devices
+ * merge cleanly. Keys in `keep` (just added) are never dropped.
+ */
+export function pruneHistory(ld: ListDoc, now = Date.now(), keep: Set<string> = new Set()): number {
+  const doomed: string[] = []
+  const live: (HistoryEntry & { key: string })[] = []
+  ld.history.forEach((h, key) => {
+    if (keep.has(key)) return
+    if (h.count <= 1 && now - h.lastAt > HISTORY_STALE_MS) doomed.push(key)
+    else live.push({ ...h, key })
+  })
+  const room = HISTORY_CAP - keep.size
+  if (live.length > room) {
+    live.sort((a, b) => b.count - a.count || b.lastAt - a.lastAt || (a.key < b.key ? -1 : 1))
+    for (const h of live.slice(Math.max(0, room))) doomed.push(h.key)
+  }
+  if (doomed.length) ld.doc.transact(() => doomed.forEach((k) => ld.history.delete(k)), LOCAL)
+  return doomed.length
+}
+
+/** Stop suggesting something as a usual (e.g. a typo). Undoable. */
+export function forgetUsual(ld: ListDoc, key: string): void {
+  if (!ld.history.has(key)) return
+  ld.doc.transact(() => ld.history.delete(key), LOCAL)
 }
 
 export function setDone(ld: ListDoc, id: string, done: boolean): void {
@@ -229,6 +266,29 @@ export function setAisleOrder(ld: ListDoc, order: string[]): void {
   ld.doc.transact(() => ld.meta.set('aisleOrder', order), LOCAL)
 }
 
+/** The list has been moved to new words. Where to is deliberately not stored. */
+export function isMoved(ld: ListDoc): boolean {
+  return ld.meta.get('moved') === true
+}
+
+/**
+ * Move a list to new words: returns its whole state (items, usuals, aisle order) as a Yjs update to seed the
+ * new list, then empties this one and marks it moved. The new words are never written here, or anyone who
+ * still has the old words would learn them. Not undoable: undo would put the items back under the old words.
+ */
+export function moveOut(ld: ListDoc): Uint8Array {
+  const state = Y.encodeStateAsUpdate(ld.doc)
+  ld.doc.transact(() => {
+    ld.items.forEach((_, id) => ld.items.delete(id))
+    ld.history.forEach((_, key) => ld.history.delete(key))
+    ld.aisleFor.forEach((_, key) => ld.aisleFor.delete(key))
+    ld.meta.set('moved', true)
+    ld.meta.set('movedAt', Date.now())
+  })
+  ld.undo.clear()
+  return state
+}
+
 export interface AisleGroup {
   aisle: string
   todo: Item[]
@@ -249,14 +309,16 @@ export function groupByAisle(items: Item[], order: string[]): AisleGroup[] {
   return [...groups.values()].filter((g) => g.todo.length || g.done.length)
 }
 
+export type Usual = HistoryEntry & { key: string }
+
 /** Frequently added items that are not currently needed. */
-export function usuals(ld: ListDoc, limit = 12): HistoryEntry[] {
+export function usuals(ld: ListDoc, limit = 12): Usual[] {
   const onList = new Set(
     allItems(ld)
       .filter((i) => !i.done)
       .map((i) => i.key),
   )
-  const out: (HistoryEntry & { key: string })[] = []
+  const out: Usual[] = []
   ld.history.forEach((h, key) => {
     if (!onList.has(key) && h.count >= 2) out.push({ ...h, key })
   })

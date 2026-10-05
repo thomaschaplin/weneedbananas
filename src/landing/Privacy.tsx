@@ -56,7 +56,8 @@ export function Privacy() {
         <h2>Who can see a list</h2>
         <p>
           Anyone who knows its three words. Treat them like a door code: share them with the people you shop with. If
-          you need a fresh start, create a new list and stop using the old one.
+          the words have gone further than you'd like, open the list's settings and choose "Move to new words": your
+          items move to a new list, and the old words only show that the list has moved, never where to.
         </p>
 
         <h2>Deleting</h2>
