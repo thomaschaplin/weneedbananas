@@ -198,6 +198,27 @@ test('theme toggle overrides the system setting and persists', async ({ page }) 
   expect(await page.evaluate(() => localStorage.getItem('wnb:theme'))).toBeNull()
 })
 
+test('a usual can be forgotten, with undo', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Start a new list' }).click()
+  await expect(page).toHaveURL(SLUG)
+  await add(page, 'mlik')
+  await add(page, 'mlik')
+  await page.getByRole('tab', { name: /at the shop/i }).click()
+  await page.getByRole('button', { name: 'Got mlik' }).click()
+  await page.getByRole('button', { name: /Done shopping/ }).click()
+  await page.getByRole('tab', { name: /plan/i }).click()
+
+  const usuals = page.getByLabel('Your usuals')
+  await expect(usuals.getByRole('button', { name: '+ mlik' })).toBeVisible()
+  await usuals.getByRole('button', { name: 'Forget mlik' }).click()
+  await expect(page.getByRole('status').filter({ hasText: 'Forgot mlik' })).toBeVisible()
+  await expect(usuals).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Undo' }).click()
+  await expect(page.getByLabel('Your usuals').getByRole('button', { name: '+ mlik' })).toBeVisible()
+})
+
 for (const width of [320, 360]) {
   test.describe(`${width}px phones`, () => {
     test.use({ viewport: { width, height: 640 } })

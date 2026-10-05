@@ -5,8 +5,12 @@ import {
   allItems,
   createListDoc,
   finishShop,
+  forgetUsual,
   groupByAisle,
   getAisleOrder,
+  HISTORY_CAP,
+  pruneHistory,
+  removeItem,
   setAisle,
   setDone,
   setMissing,
@@ -120,5 +124,68 @@ describe('list document', () => {
     sync(a.doc, b.doc)
     a.undo.undo()
     expect(allItems(a).map((i) => i.name)).toEqual(['eggs'])
+  })
+})
+
+describe('usuals history', () => {
+  const DAY = 24 * 60 * 60 * 1000
+
+  it('forgets a usual and can undo it', () => {
+    const ld = createListDoc()
+    add(ld, 'mlik')
+    add(ld, 'mlik')
+    removeItem(ld, allItems(ld)[0].id)
+    const [typo] = usuals(ld)
+    expect(typo).toMatchObject({ key: 'mlik', count: 2 })
+    forgetUsual(ld, typo.key)
+    expect(usuals(ld)).toEqual([])
+    expect(ld.history.has('mlik')).toBe(false)
+    ld.undo.undo()
+    expect(usuals(ld).map((u) => u.key)).toEqual(['mlik'])
+  })
+
+  it('undoing an add also rolls back its history count', () => {
+    const ld = createListDoc()
+    add(ld, 'bred')
+    ld.undo.undo()
+    expect(ld.history.has('bred')).toBe(false)
+    expect(allItems(ld)).toEqual([])
+  })
+
+  it('drops stale one-off entries but keeps regulars', () => {
+    const ld = createListDoc()
+    const old = Date.now() - 100 * DAY
+    ld.history.set('saffron', { name: 'saffron', count: 1, lastAt: old, unit: null })
+    ld.history.set('milk', { name: 'milk', count: 5, lastAt: old, unit: null })
+    ld.history.set('tahini', { name: 'tahini', count: 1, lastAt: Date.now() - 10 * DAY, unit: null })
+    add(ld, 'bread')
+    expect([...ld.history.keys()].sort()).toEqual(['bread', 'milk', 'tahini'])
+  })
+
+  it('caps history size, keeping the most used and what was just added', () => {
+    const ld = createListDoc()
+    const now = Date.now()
+    for (let i = 0; i < HISTORY_CAP + 50; i++) {
+      ld.history.set(`thing${i}`, { name: `thing${i}`, count: i < 60 ? 2 : 3, lastAt: now - i, unit: null })
+    }
+    add(ld, 'bananas')
+    expect(ld.history.size).toBe(HISTORY_CAP)
+    expect(ld.history.has('banana')).toBe(true)
+    // 51 were dropped: all from the count-2 entries, oldest first.
+    const twos = [...ld.history.keys()].filter((k) => ld.history.get(k)!.count === 2)
+    expect(twos.sort()).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => `thing${i}`).sort())
+  })
+
+  it('concurrent prunes and forgets converge', () => {
+    const a = createListDoc()
+    const b = createListDoc()
+    add(a, 'milk, mlik')
+    add(a, 'milk, mlik')
+    sync(a.doc, b.doc)
+    forgetUsual(a, 'mlik')
+    add(b, 'mlik')
+    pruneHistory(b, Date.now() + 1000 * DAY)
+    sync(a.doc, b.doc)
+    expect([...a.history.keys()].sort()).toEqual([...b.history.keys()].sort())
   })
 })
