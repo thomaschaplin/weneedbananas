@@ -41,7 +41,7 @@ const app = {
     'Understands quantities like "2 pints milk" or "500g mince"',
     'Shop mode with screen wake lock and large tick targets',
     'Works offline',
-    'Peer-to-peer sync with no server storing lists',
+    'Peer-to-peer sync, and an encrypted copy for phones that open the list later',
   ],
 }
 

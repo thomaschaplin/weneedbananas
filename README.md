@@ -6,7 +6,7 @@ A shared shopping list at **weneedbananas.com** with no signup and no backend. A
 
 - **No server stores lists.** Each device keeps the full list in IndexedDB ([Yjs](https://yjs.dev) CRDT + `y-indexeddb`).
 - **Peer-to-peer sync.** Devices with the same list open connect over WebRTC via [Trystero](https://github.com/dmotz/trystero), using public Nostr relays for signaling only. The words go through PBKDF2 (600k rounds) on-device to produce the room id and the handshake password, so the relays never see the words or the items.
-- **Trade-off:** two devices must have the list open at the same time to exchange changes. Offline edits merge cleanly when they meet. The UI shows sync state at all times.
+- **Encrypted mailbox for devices that aren't open together** (`src/lib/mailbox.ts`). Each device also publishes the whole Yjs state, AES-GCM encrypted with a key derived from the words, as a NIP-78 addressable event (kind 30078) on a few public Nostr relays, signed by a secp256k1 key also derived from the words. Relays keep only the newest one, and each carries a NIP-40 `expiration` 30 days out, refreshed whenever a device opens or edits the list. A device opening the list fetches it, merges it and republishes if it has anything new, and publishes again shortly after each edit and when the page is hidden. So someone can add items, lock their phone, and the next person to open the list still gets them. The UI shows sync state at all times.
 
 ## Shopping features
 

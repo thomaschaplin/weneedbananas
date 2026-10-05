@@ -15,10 +15,10 @@
 
 ## How it works
 
-- There is no server or database storing lists. Each device keeps a full copy in the browser (IndexedDB).
-- Devices with the same list open sync directly over encrypted peer-to-peer WebRTC connections; public Nostr relays are only used so devices can find each other.
-- Two devices must have the list open at the same time for changes to pass between them. Edits made offline merge automatically (CRDT, Yjs).
-- The words are turned into a key on the device with PBKDF2; relays see only a derived room id.
+- There is no server of its own or database storing lists. Each device keeps a full copy in the browser (IndexedDB).
+- Devices with the same list open sync directly over encrypted peer-to-peer WebRTC connections; public Nostr relays help devices find each other.
+- Devices don't need to be open at the same time: each one leaves an AES-GCM encrypted copy of the list on public Nostr relays, which the next device to open the list picks up. Each copy expires (NIP-40) 30 days after the list was last opened or edited. Edits made offline merge automatically (CRDT, Yjs).
+- The words are turned into keys on the device with PBKDF2; relays see only a derived room id, a derived public key and ciphertext.
 
 ## Privacy
 

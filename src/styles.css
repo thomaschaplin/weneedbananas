@@ -979,6 +979,14 @@ h1 {
   animation: pulse 2.2s infinite;
 }
 
+.sync-badge.saved {
+  color: var(--leaf);
+}
+
+.sync-badge.saved .dot {
+  background: var(--leaf);
+}
+
 .sync-badge.offline .dot {
   background: transparent;
   border: 2px solid var(--muted);

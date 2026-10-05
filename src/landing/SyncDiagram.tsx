@@ -167,7 +167,7 @@ export function SyncDiagram() {
             direct WebRTC data channel
           </text>
           <text x="380" y="479" text-anchor="middle" class="sd-m">
-            encrypted, phone to phone. Your items never pass through a relay.
+            encrypted, phone to phone
           </text>
 
           <Phase y={502} n={2} title="Catch up: each phone asks for exactly what it's missing" />
@@ -231,7 +231,8 @@ export function SyncDiagram() {
       </div>
       <figcaption>
         Dashed grey lines go through the public relays and carry only the scrambled room id and a sealed handshake.
-        Solid green lines travel over the direct phone-to-phone channel, the only place list items ever move.
+        Solid green lines travel over the direct phone-to-phone channel. Separately, each phone leaves an encrypted copy
+        of the list on the relays for phones that open it later (see below).
       </figcaption>
     </figure>
   )
