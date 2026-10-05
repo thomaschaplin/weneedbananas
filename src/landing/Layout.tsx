@@ -30,11 +30,6 @@ export function SiteFooter() {
         <a href="/how-it-works">How it works</a>
         <a href="/privacy">Privacy</a>
       </nav>
-      <nav aria-label="Guides">
-        <a href="/shared-shopping-list-no-signup">No-signup shared list</a>
-        <a href="/family-shopping-list">Family shopping list</a>
-        <a href="/shopping-list-app-alternatives">Compared with other apps</a>
-      </nav>
     </footer>
   )
 }

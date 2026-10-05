@@ -7,14 +7,7 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const LIST_PATH = /^\/[a-z]+\.[a-z]+\.[a-z]+\/?(?:[?#].*)?$/i
-const PAGES = [
-  'how-it-works',
-  'privacy',
-  'offline',
-  'shared-shopping-list-no-signup',
-  'family-shopping-list',
-  'shopping-list-app-alternatives',
-]
+const PAGES = ['how-it-works', 'privacy', 'offline']
 
 const isFile = (path: string) =>
   path === '/' || ['public', 'dist', '.'].some((dir) => existsSync(resolve(import.meta.dirname, dir, `.${path}`)))
@@ -107,9 +100,6 @@ export default defineConfig({
         privacy: resolve(import.meta.dirname, 'privacy.html'),
         404: resolve(import.meta.dirname, '404.html'),
         offline: resolve(import.meta.dirname, 'offline.html'),
-        'shared-shopping-list-no-signup': resolve(import.meta.dirname, 'shared-shopping-list-no-signup.html'),
-        'family-shopping-list': resolve(import.meta.dirname, 'family-shopping-list.html'),
-        'shopping-list-app-alternatives': resolve(import.meta.dirname, 'shopping-list-app-alternatives.html'),
       },
     },
   },
