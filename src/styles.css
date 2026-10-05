@@ -1370,6 +1370,59 @@ h1 {
   color: var(--muted);
 }
 
+/* swipe gestures: the row slides over a coloured action behind it */
+.item {
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.item-fg {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  transition: transform 0.2s ease;
+}
+
+.item.swiping .item-fg {
+  transition: none;
+}
+
+.item.swiping {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.swipe-bg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  font-weight: 750;
+  color: var(--bg);
+  pointer-events: none;
+}
+
+.swipe-right {
+  justify-content: flex-start;
+  background: var(--leaf);
+}
+
+.swipe-left {
+  justify-content: flex-end;
+  background: var(--danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item-fg {
+    transition: none;
+  }
+}
+
 /* shop mode: bigger everything */
 .app.shop {
   --tap: 64px;

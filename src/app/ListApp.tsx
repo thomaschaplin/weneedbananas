@@ -235,6 +235,7 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
               shopMode={shopMode}
               onToggle={onToggle}
               onEdit={(it) => setSheet({ edit: it.id })}
+              onRemove={(it) => editActions.remove(it.id)}
             />
           ))
         )}

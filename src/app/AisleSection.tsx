@@ -8,11 +8,13 @@ export function AisleSection({
   shopMode,
   onToggle,
   onEdit,
+  onRemove,
 }: {
   group: AisleGroup
   shopMode: boolean
   onToggle: (item: Item) => void
   onEdit: (item: Item) => void
+  onRemove?: (item: Item) => void
 }) {
   const aisle = AISLE_BY_ID[group.aisle] ?? AISLE_BY_ID.other
   const complete = group.todo.length === 0
@@ -43,11 +45,18 @@ export function AisleSection({
       </h2>
       <ul class="items">
         {group.todo.map((it) => (
-          <ItemRow key={it.id} item={it} shopMode={shopMode} onToggle={onToggle} onEdit={onEdit} />
+          <ItemRow key={it.id} item={it} shopMode={shopMode} onToggle={onToggle} onEdit={onEdit} onRemove={onRemove} />
         ))}
         {doneVisible &&
           group.done.map((it) => (
-            <ItemRow key={it.id} item={it} shopMode={shopMode} onToggle={onToggle} onEdit={onEdit} />
+            <ItemRow
+              key={it.id}
+              item={it}
+              shopMode={shopMode}
+              onToggle={onToggle}
+              onEdit={onEdit}
+              onRemove={onRemove}
+            />
           ))}
       </ul>
     </section>
