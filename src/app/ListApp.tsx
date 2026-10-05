@@ -221,6 +221,7 @@ export function ListApp({ slug }: { slug: string }) {
               shopMode={shopMode}
               onToggle={onToggle}
               onEdit={(it) => setSheet({ edit: it.id })}
+              onRemove={(it) => editActions.remove(it.id)}
             />
           ))
         )}

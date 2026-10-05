@@ -212,3 +212,47 @@ for (const width of [320, 360]) {
     }
   })
 }
+
+test('swipe right ticks an item, swipe left removes it with undo', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Start a new list' }).click()
+  await expect(page).toHaveURL(SLUG)
+  await add(page, 'bananas, apples, sourdough')
+  const row = (name: string) => page.locator('.item', { hasText: name })
+  await expect(row('sourdough')).toBeVisible()
+
+  async function swipe(name: string, fraction: number) {
+    const box = (await row(name).boundingBox())!
+    const y = box.y + box.height / 2
+    const x0 = box.x + box.width / 2
+    await page.mouse.move(x0, y)
+    await page.mouse.down()
+    await page.mouse.move(x0 + box.width * fraction, y, { steps: 12 })
+    await page.mouse.up()
+  }
+
+  // A short, slow drag springs back without doing anything (or opening the editor).
+  await swipe('bananas', 0.15)
+  await expect(page.getByRole('button', { name: 'Got bananas' })).toHaveAttribute('aria-pressed', 'false')
+  await expect(page.locator('dialog[open]')).toHaveCount(0)
+
+  // Plan mode: swipe right ticks, and the drag doesn't open the editor.
+  await swipe('bananas', 0.45)
+  await expect(page.getByRole('button', { name: 'Put bananas back on the list' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.locator('dialog[open]')).toHaveCount(0)
+
+  // Shop mode: swipe right again unticks (apples keep the aisle open so bananas stays shown).
+  await page.getByRole('tab', { name: /at the shop/i }).click()
+  await swipe('bananas', 0.45)
+  await expect(page.getByRole('button', { name: 'Got bananas' })).toHaveAttribute('aria-pressed', 'false')
+
+  // Swipe left removes, and Undo brings it back.
+  await swipe('sourdough', -0.45)
+  await expect(row('sourdough')).toHaveCount(0)
+  await expect(page.getByText('Removed sourdough')).toBeVisible()
+  await page.getByRole('button', { name: 'Undo' }).click()
+  await expect(row('sourdough')).toBeVisible()
+})
