@@ -118,6 +118,28 @@ test('two devices sync peer-to-peer', async ({ browser }) => {
   await b.close()
 })
 
+test('a device that opens the list after the first has gone still gets the items', async ({ browser }) => {
+  const relay = new MockRelay()
+  const slug = 'apple.chair.lamp'
+  const a = await browser.newContext()
+  await relay.attach(a)
+  const pa = await a.newPage()
+
+  await pa.goto(`/${slug}`)
+  await add(pa, 'eggs, bread, bananas')
+  await expect(pa.getByRole('button', { name: 'Sync status: Up to date' })).toBeVisible({ timeout: 15_000 })
+  // Put the phone down: this device is gone before the other one ever opens the list.
+  await a.close()
+
+  const b = await browser.newContext()
+  await relay.attach(b)
+  const pb = await b.newPage()
+  await pb.goto(`/${slug}`)
+  await expect(pb.locator('.item')).toHaveCount(3, { timeout: 15_000 })
+  await expect(pb.getByRole('region', { name: 'Fruit & veg' })).toContainText('bananas')
+  await b.close()
+})
+
 test('shop mode asks for your name and confirms it saved', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Start a new list' }).click()

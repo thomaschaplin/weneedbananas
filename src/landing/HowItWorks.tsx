@@ -15,10 +15,10 @@ const WHO_SEES: { who: string; rows: [tag: string, text: string, yes: boolean][]
     rows: [
       [
         'Sees',
-        'A scrambled 64-character room id and an encrypted handshake, just long enough to introduce the phones.',
+        'A scrambled 64-character room id, an encrypted handshake, and an encrypted copy of the list kept for phones that open it later.',
         true,
       ],
-      ['Never sees', 'The three words or any item on the list.', false],
+      ['Never sees', 'The three words, or any item on the list in readable form.', false],
     ],
   },
   {
@@ -100,16 +100,21 @@ export function HowItWorks() {
           ))}
         </div>
 
-        <h2>The one trade-off</h2>
+        <h2>When nobody else has the list open</h2>
         <p>
-          With no server holding the list, <strong>two devices need to have it open at the same time</strong> for
-          changes to pass between them. In practice that happens naturally: open the list when you get to the shop and
-          anyone at home with it open syncs instantly. The badge at the top of the list always tells you whether you're{' '}
-          <em>live</em> with someone or only saved on this device.
+          You don't have to wait for the other person. Each phone also leaves a sealed copy of the list on a few public
+          Nostr relays. It's encrypted with a key made from the three words (AES-GCM), and signed with another, so the
+          relays can't read it and nobody without the words can replace it. Each relay keeps only the newest copy.
         </p>
         <p>
-          Tip: if you're adding things for someone else to buy, open the list once while they have it open too, even for
-          a few seconds, and everything comes across.
+          When a phone opens the list it picks up that copy and merges it in, then leaves a fresh one if it has anything
+          new. So you can add your items, put your phone down, and whoever opens the list next still gets them. The
+          badge at the top of the list says <em>Up to date</em> once your changes are waiting for them, or <em>Live</em>{' '}
+          while you're connected to someone directly.
+        </p>
+        <p>
+          The relays are run by volunteers and don't promise to keep anything forever, so the copy on each phone is
+          always the real list. The relay copy is just how changes get between phones that aren't open at the same time.
         </p>
 
         <h2>Built for shopping</h2>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { IndexeddbPersistence } from 'y-indexeddb'
 import { createListDoc } from '../lib/doc'
+import { Mailbox, type MailboxStatus } from '../lib/mailbox'
 import { P2PProvider, type SyncStatus } from '../lib/p2p'
 import { getName } from '../lib/recent'
 
@@ -25,14 +26,22 @@ export function useList(slug: string) {
     lastSyncAt: null,
     presence: {},
   })
+  const [mailbox, setMailbox] = useState<MailboxStatus>({ state: 'connecting', receivedAt: null })
   const [lastSync, setLastSync] = useState<number | null>(() => readLastSync(slug))
   const provider = useRef<P2PProvider | null>(null)
   const persistence = useRef<IndexeddbPersistence | null>(null)
+  const box = useRef<Mailbox | null>(null)
 
   useEffect(() => {
     const idb = new IndexeddbPersistence(`wnb:${slug}`, ld.doc)
     persistence.current = idb
-    void idb.whenSynced.then(() => setLoaded(true))
+    const mb = new Mailbox(ld.doc, slug)
+    box.current = mb
+    const unsubBox = mb.subscribe(setMailbox)
+    void idb.whenSynced.then(() => {
+      setLoaded(true)
+      void mb.start(ld.doc.store.clients.size > 0)
+    })
 
     const bump = () => setVersion((v) => v + 1)
     ld.doc.on('update', bump)
@@ -44,25 +53,30 @@ export function useList(slug: string) {
 
     return () => {
       unsub()
+      unsubBox()
       ld.doc.off('update', bump)
+      mb.destroy()
       p2p.destroy()
       void idb.destroy()
     }
   }, [ld, slug])
 
+  // Changes picked up from the mailbox came from another device too.
+  const syncedAt = Math.max(status.lastSyncAt ?? 0, mailbox.receivedAt ?? 0) || null
   useEffect(() => {
-    if (!status.lastSyncAt) return
-    setLastSync(status.lastSyncAt)
+    if (!syncedAt) return
+    setLastSync(syncedAt)
     try {
-      localStorage.setItem(lastSyncKey(slug), String(status.lastSyncAt))
+      localStorage.setItem(lastSyncKey(slug), String(syncedAt))
     } catch {
       /* ignore */
     }
-  }, [status.lastSyncAt, slug])
+  }, [syncedAt, slug])
 
   /** Wipe this list from this device only. */
   const removeLocal = async () => {
     provider.current?.destroy()
+    box.current?.destroy()
     await persistence.current?.clearData()
     try {
       localStorage.removeItem(lastSyncKey(slug))
@@ -72,5 +86,5 @@ export function useList(slug: string) {
     }
   }
 
-  return { ld, version, loaded, status, lastSync, provider, removeLocal }
+  return { ld, version, loaded, status, mailbox, lastSync, provider, removeLocal }
 }

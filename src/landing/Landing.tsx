@@ -80,8 +80,8 @@ export function Landing() {
             words is on the list. No accounts.
           </li>
           <li>
-            <strong>Add from anywhere, tick off in the shop.</strong> Every phone keeps its own copy, and copies sync
-            directly with each other whenever they're open at the same time.
+            <strong>Add from anywhere, tick off in the shop.</strong> Every phone keeps its own copy. Phones sync live
+            when they're open together, and an encrypted copy waits for whoever opens the list next.
           </li>
         </ol>
         <p>

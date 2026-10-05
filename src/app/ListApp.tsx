@@ -37,7 +37,7 @@ type SheetKind = null | 'share' | 'menu' | 'sync' | { edit: string }
 const modeKey = (slug: string) => `wnb:mode:${slug}`
 
 export function ListApp({ slug }: { slug: string }) {
-  const { ld, version, loaded, status, lastSync, provider, removeLocal } = useList(slug)
+  const { ld, version, loaded, status, mailbox, lastSync, provider, removeLocal } = useList(slug)
   const [shopMode, setShopMode] = useState(() => {
     try {
       return localStorage.getItem(modeKey(slug)) === 'shop'
@@ -175,7 +175,7 @@ export function ListApp({ slug }: { slug: string }) {
             🛒 At the shop
           </button>
         </div>
-        <SyncBadge status={status} onClick={() => setSheet('sync')} />
+        <SyncBadge status={status} mailbox={mailbox} onClick={() => setSheet('sync')} />
       </div>
 
       {shopMode && <ShopIdentity name={name} onName={saveName} />}
@@ -243,7 +243,7 @@ export function ListApp({ slug }: { slug: string }) {
         <ShareContent slug={slug} />
       </Sheet>
       <Sheet open={sheet === 'sync'} onClose={() => setSheet(null)} title="Sync">
-        <SyncInfo status={status} lastSync={lastSync} onShare={() => setSheet('share')} />
+        <SyncInfo status={status} mailbox={mailbox} lastSync={lastSync} onShare={() => setSheet('share')} />
       </Sheet>
       <Sheet open={sheet === 'menu'} onClose={() => setSheet(null)} title="List settings">
         <MenuContent

@@ -19,19 +19,19 @@ export const FAQ: QA[] = [
   },
   {
     q: 'Where is my list stored?',
-    a: 'On your own devices. Every phone or computer that opens the list keeps a full copy in the browser, and copies sync directly between devices over an encrypted peer-to-peer connection (WebRTC). We have no database and no server that stores lists.',
+    a: 'On your own devices. Every phone or computer that opens the list keeps a full copy in the browser, and copies sync directly between devices over an encrypted peer-to-peer connection (WebRTC). So that a phone opening the list later still gets your changes, an encrypted copy also waits on a few public Nostr relays, which cannot read it. We have no database and no server of our own that stores lists.',
   },
   {
     q: 'Do both phones need the list open to sync?',
-    a: 'Yes. Because there is no server in the middle, changes move when two devices have the list open at the same time, even briefly. Each device remembers everything, and changes made offline merge automatically the next time they meet. The badge at the top shows whether you are live with anyone right now.',
+    a: 'No. Add your items, put your phone down, and whoever opens the list next gets them. Each phone leaves an encrypted copy of the list on public relays for the next device to pick up, and when two phones have the list open at the same time they sync live, directly. Changes made offline merge automatically. The badge at the top shows whether you are live with someone or your changes are up to date.',
   },
   {
     q: 'Does it work in a shop with no signal?',
-    a: 'Yes. The list is saved on your phone and the site works offline once you have opened it. Tick things off as you go; your changes sync when you are back online with someone else who has the list open.',
+    a: 'Yes. The list is saved on your phone and the site works offline once you have opened it. Tick things off as you go; your changes are sent when you are back online.',
   },
   {
     q: 'Is my shopping list private?',
-    a: 'List pages are never indexed by search engines and your items never leave your devices except to go directly to the other people on the list. The words are turned into a secret key on your device; public relays only help devices find each other and see a scrambled room id, not your words or items. Anyone who knows the three words can open the list, so share them only with people you shop with.',
+    a: 'List pages are never indexed by search engines. The words are turned into secret keys on your device and never leave it. Items go directly between phones, and the copy left on public relays for later is encrypted with a key only the words can produce, so the relays see scrambled data, not your words or items. Anyone who knows the three words can open the list, so share them only with people you shop with.',
   },
   {
     q: 'What makes this better than a notes app or a to-do list?',

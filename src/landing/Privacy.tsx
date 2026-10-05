@@ -23,8 +23,9 @@ export function Privacy() {
 
         <h2>Where your list lives</h2>
         <p>
-          Only on the devices that open it, in the browser's local storage (IndexedDB). It is sent directly between
-          those devices over encrypted WebRTC connections.
+          On the devices that open it, in the browser's local storage (IndexedDB). It is sent directly between those
+          devices over encrypted WebRTC connections. So that a device opening the list later still gets the latest
+          changes, an encrypted copy is also left on a few public Nostr relays (see below).
         </p>
 
         <h2>Who else is involved</h2>
@@ -36,7 +37,9 @@ export function Privacy() {
           </li>
           <li>
             <strong>Public Nostr relays</strong> help devices with the same list find each other. They see a scrambled
-            room id derived from your words and an encrypted handshake, never the words or the items.
+            room id derived from your words and an encrypted handshake. They also hold the newest encrypted copy of the
+            list, sealed with a key derived from your words, which they can't read. They never see the words or the
+            items.
           </li>
           <li>
             <strong>Public STUN servers</strong> help devices behind home routers connect, as with any browser video
@@ -58,8 +61,9 @@ export function Privacy() {
 
         <h2>Deleting</h2>
         <p>
-          In a list, open the menu and choose "Remove from this device". Once every device that had the list removes it,
-          it no longer exists anywhere.
+          In a list, open the menu and choose "Remove from this device". The encrypted copy on the relays stays for
+          other people on the list, until the relays clear out old data; without the three words it is unreadable. To
+          make a list unreachable, clear it and stop using its words.
         </p>
       </article>
     </Page>
