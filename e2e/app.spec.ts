@@ -247,7 +247,7 @@ for (const width of [320, 360]) {
   test.describe(`${width}px phones`, () => {
     test.use({ viewport: { width, height: 640 } })
 
-    for (const path of ['/', '/lemon.fork.bulb']) {
+    for (const path of ['/', '/lemon.fork.bulb', '/shopping-list-app-alternatives']) {
       test(`${path} does not scroll sideways at ${width}px`, async ({ page }) => {
         await page.goto(path)
         await page.waitForLoadState('networkidle')
@@ -255,5 +255,24 @@ for (const width of [320, 360]) {
         expect(scrollWidth).toBe(width)
       })
     }
+  })
+}
+
+for (const path of ['/shared-shopping-list-no-signup', '/family-shopping-list', '/shopping-list-app-alternatives']) {
+  test(`${path} is prerendered and SEO-ready`, async ({ request }) => {
+    const res = await request.get(path)
+    expect(res.status()).toBe(200)
+    const html = await res.text()
+    expect(html.match(/<h1>/g)).toHaveLength(1)
+    expect(html).toContain(`<link rel="canonical" href="https://weneedbananas.com${path}" />`)
+    expect(html).toContain('"@type":"Article"')
+    expect(html).toContain('"@type":"FAQPage"')
+    expect(html).toContain('"@type":"BreadcrumbList"')
+    expect(html).toContain('href="/how-it-works"')
+    expect(html).toContain('Start a list')
+    expect(html).not.toContain('noindex')
+
+    const sitemap = await (await request.get('/sitemap.xml')).text()
+    expect(sitemap).toContain(`<loc>https://weneedbananas.com${path}</loc>`)
   })
 }

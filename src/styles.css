@@ -1791,3 +1791,13 @@ h1 {
   border-radius: 12px;
   background: var(--surface-2);
 }
+
+/* Footer guide links (Layout.tsx): wrap on narrow phones. */
+.site-footer nav {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+.site-footer nav + nav {
+  margin-top: 10px;
+}

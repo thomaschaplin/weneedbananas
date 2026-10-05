@@ -4,6 +4,9 @@ User-agent: *
 Allow: /$
 Allow: /how-it-works
 Allow: /privacy
+Allow: /shared-shopping-list-no-signup
+Allow: /family-shopping-list
+Allow: /shopping-list-app-alternatives
 Allow: /llms.txt
 Allow: /assets/
 Disallow: /*.*.

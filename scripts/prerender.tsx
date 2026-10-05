@@ -6,8 +6,12 @@ import { resolve } from 'node:path'
 import type { ComponentType } from 'preact'
 import { renderToString } from 'preact-render-to-string'
 import { FAQ, SITE } from '../src/content'
+import { ALTERNATIVES, FAMILY, NO_SIGNUP, type Guide } from '../src/guides'
+import { Alternatives } from '../src/landing/Alternatives'
+import { Family } from '../src/landing/Family'
 import { HowItWorks } from '../src/landing/HowItWorks'
 import { Landing } from '../src/landing/Landing'
+import { NoSignup } from '../src/landing/NoSignup'
 import { NotFound } from '../src/landing/NotFound'
 import { Offline } from '../src/landing/Offline'
 import { Privacy } from '../src/landing/Privacy'
@@ -76,6 +80,28 @@ function breadcrumb(path: string, name: string) {
   }
 }
 
+// Use-case guides (src/guides.ts): Article, their own FAQPage and a breadcrumb.
+function guidePage(file: string, Component: ComponentType, g: Guide) {
+  return {
+    file,
+    Component,
+    graph: [
+      website,
+      article(g.path, g.headline, g.description),
+      {
+        '@type': 'FAQPage',
+        '@id': `${SITE.url}${g.path}#faq`,
+        mainEntity: g.faq.map((f) => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a },
+        })),
+      },
+      breadcrumb(g.path, g.name),
+    ],
+  }
+}
+
 const pages: { file: string; Component: ComponentType; graph: object[] }[] = [
   { file: 'index.html', Component: Landing, graph: [website, app, faqPage] },
   {
@@ -96,6 +122,9 @@ const pages: { file: string; Component: ComponentType; graph: object[] }[] = [
     Component: Privacy,
     graph: [website, breadcrumb('/privacy', 'Privacy')],
   },
+  guidePage('shared-shopping-list-no-signup.html', NoSignup, NO_SIGNUP),
+  guidePage('family-shopping-list.html', Family, FAMILY),
+  guidePage('shopping-list-app-alternatives.html', Alternatives, ALTERNATIVES),
   // Error pages are noindex and carry no structured data.
   { file: '404.html', Component: NotFound, graph: [] },
   { file: 'offline.html', Component: Offline, graph: [] },
