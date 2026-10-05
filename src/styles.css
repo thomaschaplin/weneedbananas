@@ -1742,3 +1742,21 @@ h1 {
 .sync-info p {
   margin: 0 0 12px;
 }
+
+/* nudges before an unused list's relay copy runs out */
+.recent a:has(.recent-hint) {
+  flex-wrap: wrap;
+}
+
+.recent-hint {
+  flex-basis: 100%;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.keep-safe-alone {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
