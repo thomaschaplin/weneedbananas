@@ -382,3 +382,57 @@ test('swipe right ticks an item, swipe left removes it with undo', async ({ page
   await page.getByRole('button', { name: 'Undo' }).click()
   await expect(row('sourdough')).toBeVisible()
 })
+
+test('moving a list to new words leaves the old words with only a notice', async ({ browser }) => {
+  const relay = new MockRelay()
+  const slug = 'pear.drum.kite'
+  const escaped = (s: string) => new RegExp(s.replace(/\./g, '\\.'))
+  const a = await browser.newContext()
+  const b = await browser.newContext()
+  await relay.attach(a)
+  await relay.attach(b)
+  const pa = await a.newPage()
+  const pb = await b.newPage()
+
+  await pa.goto(`/${slug}`)
+  await add(pa, 'eggs, bread, bananas')
+  await pb.goto(`/${slug}`)
+  await expect(pb.getByRole('button', { name: /Sync status: Live with 1/ })).toBeVisible({ timeout: 30_000 })
+  await expect(pb.locator('.item')).toHaveCount(3)
+
+  await pa.getByRole('button', { name: 'List settings' }).click()
+  const settings = pa.getByRole('dialog', { name: 'List settings' })
+  await settings.getByRole('button', { name: 'Move to new words' }).click()
+  await expect(settings).toContainText('Everyone you want to keep on the list needs the new words')
+  await settings.getByRole('button', { name: 'Move', exact: true }).click()
+
+  // The mover lands on the new words, with the items, ready to share them.
+  await expect(pa).not.toHaveURL(escaped(slug), { timeout: 15_000 })
+  await expect(pa).toHaveURL(SLUG)
+  const next = new URL(pa.url()).pathname.slice(1)
+  await expect(pa.getByRole('dialog', { name: 'Share this list' })).toContainText(next.split('.')[2])
+  await expect(pa.locator('.item')).toHaveCount(3)
+
+  // Whoever is still on the old words sees it has moved, but not where to.
+  await expect(pb.getByText('This list has been moved')).toBeVisible()
+  await expect(pb.getByText('Ask whoever moved it for the new words.')).toBeVisible()
+  await expect(pb.locator('.item')).toHaveCount(0)
+  await expect(pb.getByLabel('Add an item')).toHaveCount(0)
+  expect(await pb.content()).not.toContain(next)
+
+  // The mover's recent lists swap the old words for the new.
+  await pa.goto('/')
+  await expect(pa.getByRole('link', { name: escaped(next) })).toBeVisible()
+  await expect(pa.getByRole('link', { name: escaped(slug) })).toHaveCount(0)
+  await a.close()
+  await b.close()
+
+  // A device opening the old words later gets the notice from the mailbox.
+  const c = await browser.newContext()
+  await relay.attach(c)
+  const pc = await c.newPage()
+  await pc.goto(`/${slug}`)
+  await expect(pc.getByText('This list has been moved')).toBeVisible({ timeout: 15_000 })
+  await expect(pc.locator('.item')).toHaveCount(0)
+  await c.close()
+})

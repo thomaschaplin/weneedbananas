@@ -8,6 +8,7 @@ import {
   forgetUsual,
   getAisleOrder,
   groupByAisle,
+  isMoved,
   removeItem,
   setAisle,
   setAisleOrder,
@@ -38,7 +39,7 @@ type SheetKind = null | 'share' | 'menu' | 'sync' | { edit: string }
 const modeKey = (slug: string) => `wnb:mode:${slug}`
 
 export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
-  const { ld, version, loaded, status, mailbox, lastSync, provider, removeLocal } = useList(slug)
+  const { ld, version, loaded, status, mailbox, lastSync, provider, removeLocal, moveToNewWords } = useList(slug)
   const [shopMode, setShopMode] = useState(() => {
     try {
       return localStorage.getItem(modeKey(slug)) === 'shop'
@@ -54,6 +55,8 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
   const order = useMemo(() => getAisleOrder(ld), [version])
   const groups = useMemo(() => groupByAisle(items, order), [items, order])
   const usual = useMemo(() => usuals(ld), [version])
+  const moved = useMemo(() => isMoved(ld), [version])
+  const [moving, setMoving] = useState(false)
   const todo = items.filter((i) => !i.done).length
   const got = items.length - todo
 
@@ -68,6 +71,33 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
   useEffect(() => {
     if (loaded) rememberList(slug, todo)
   }, [loaded, todo, slug])
+
+  // Just moved here from old words: offer to share the new ones straight away.
+  useEffect(() => {
+    if (location.hash !== '#moved') return
+    history.replaceState(null, '', location.pathname)
+    setSheet('share')
+    say('List moved. Share the new words with everyone you want to keep.')
+  }, [])
+
+  const moveAway = async () => {
+    setMoving(true)
+    try {
+      const next = await moveToNewWords()
+      forgetList(slug)
+      rememberList(next, todo)
+      location.replace(`/${next}#moved`)
+    } catch {
+      setMoving(false)
+      say("Couldn't move the list. Try again.")
+    }
+  }
+
+  const removeMoved = async () => {
+    await removeLocal()
+    forgetList(slug)
+    location.href = '/'
+  }
 
   useEffect(() => {
     keepAwake(shopMode)
@@ -193,7 +223,7 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
         </div>
       )}
 
-      {!shopMode && usual.length > 0 && (
+      {!shopMode && !moved && usual.length > 0 && (
         <div class="usuals" aria-label="Your usuals">
           <span class="usuals-label">Usuals</span>
           <div class="chips">
@@ -225,7 +255,22 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
       )}
 
       <main class="list">
-        {!loaded ? null : items.length === 0 ? (
+        {(moved || moving) && (
+          <div class="empty" role="status">
+            <p class="empty-title">{moving ? 'Moving to new words…' : 'This list has been moved'}</p>
+            {moving ? (
+              <p>Making sure everyone on the old words sees it has moved.</p>
+            ) : (
+              <>
+                <p>Ask whoever moved it for the new words.</p>
+                <button type="button" class="btn" onClick={removeMoved}>
+                  Remove it from this device
+                </button>
+              </>
+            )}
+          </div>
+        )}
+        {!loaded || moving || (moved && items.length === 0) ? null : items.length === 0 ? (
           <Empty onShare={() => setSheet('share')} />
         ) : (
           groups.map((g) => (
@@ -252,7 +297,7 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
         )}
       </main>
 
-      <AddBar ld={ld} version={version} onAdd={onAdd} compact={shopMode} initial={prefill} />
+      {!moved && !moving && <AddBar ld={ld} version={version} onAdd={onAdd} compact={shopMode} initial={prefill} />}
 
       <Sheet open={sheet === 'share'} onClose={() => setSheet(null)} title="Share this list">
         <ShareContent slug={slug} items={items} order={order} />
@@ -272,6 +317,9 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
             setSheet(null)
             say('List cleared', true)
           }}
+          onMove={moveAway}
+          moving={moving}
+          moved={moved}
           onRemoveLocal={async () => {
             await removeLocal()
             forgetList(slug)

@@ -31,7 +31,7 @@ export const FAQ: QA[] = [
   },
   {
     q: 'Is my shopping list private?',
-    a: 'List pages are never indexed by search engines. The words are turned into secret keys on your device and never leave it. Items go directly between phones, and the copy left on public relays for later is encrypted with a key only the words can produce, so the relays see scrambled data, not your words or items. Anyone who knows the three words can open the list, so share them only with people you shop with.',
+    a: 'List pages are never indexed by search engines. The words are turned into secret keys on your device and never leave it. Items go directly between phones, and the copy left on public relays for later is encrypted with a key only the words can produce, so the relays see scrambled data, not your words or items. Anyone who knows the three words can open the list, so share them only with people you shop with. If they get out, "Move to new words" in the list\'s settings moves everything to a fresh list and leaves the old words empty.',
   },
   {
     q: 'What makes this better than a notes app or a to-do list?',

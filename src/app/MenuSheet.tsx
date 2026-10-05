@@ -9,6 +9,9 @@ export function MenuContent({
   onOrder,
   onClearAll,
   onRemoveLocal,
+  onMove,
+  moving = false,
+  moved = false,
   itemCount,
 }: {
   name: string
@@ -17,9 +20,15 @@ export function MenuContent({
   onOrder: (o: string[]) => void
   onClearAll: () => void
   onRemoveLocal: () => void
+  /** Move the list to new words. */
+  onMove?: () => void
+  moving?: boolean
+  /** This list has already been moved away. */
+  moved?: boolean
   itemCount: number
 }) {
   const [confirmRemove, setConfirmRemove] = useState(false)
+  const [confirmMove, setConfirmMove] = useState(false)
 
   const move = (i: number, d: -1 | 1) => {
     const j = i + d
@@ -82,6 +91,29 @@ export function MenuContent({
           <button type="button" class="btn" disabled={itemCount === 0} onClick={onClearAll}>
             Clear every item
           </button>
+          {onMove &&
+            !moved &&
+            (confirmMove ? (
+              <div class="confirm">
+                <p>
+                  Move this list to new words? A new private list is made with the same items, usuals and aisle order.
+                  Everyone you want to keep on the list needs the new words. Anyone with the old words will only see
+                  that the list has moved.
+                </p>
+                <div class="row">
+                  <button type="button" class="btn btn-primary" disabled={moving} onClick={onMove}>
+                    {moving ? 'Moving…' : 'Move'}
+                  </button>
+                  <button type="button" class="btn" disabled={moving} onClick={() => setConfirmMove(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" class="btn" onClick={() => setConfirmMove(true)}>
+                Move to new words
+              </button>
+            ))}
           {confirmRemove ? (
             <div class="confirm">
               <p>

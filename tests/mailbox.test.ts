@@ -230,6 +230,26 @@ describe('mailbox', () => {
     expect(allItems(b.ld)).toHaveLength(0)
   })
 
+  it('flushNow sends a change straight away and waits for a relay to confirm it', async () => {
+    const a = device()
+    await a.mb.start(false)
+    addItems(a.ld, parseMany('eggs'))
+    expect(await a.mb.flushNow()).toBe(true)
+    expect(relay.stored.size).toBe(1)
+
+    const b = device()
+    await b.mb.start(false)
+    await until(() => allItems(b.ld).length === 1)
+  })
+
+  it('flushNow gives up when no relay will take the changes', async () => {
+    relay.reject = true
+    const a = device()
+    await a.mb.start(false)
+    addItems(a.ld, parseMany('eggs'))
+    expect(await a.mb.flushNow(500)).toBe(false)
+  })
+
   it('says so when no relay will take the changes', async () => {
     relay.reject = true
     const a = device()
