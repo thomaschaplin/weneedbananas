@@ -1742,3 +1742,40 @@ h1 {
 .sync-info p {
   margin: 0 0 12px;
 }
+
+/* ---------- plain-text export and share target ---------- */
+
+.share-text {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1.5px solid var(--line);
+  text-align: center;
+}
+
+.share-target {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: calc(16px + env(safe-area-inset-top)) 16px 32px;
+}
+
+.share-target h1 {
+  font-size: 1.5rem;
+  margin: 12px 0 8px;
+}
+
+.share-target-preview {
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  max-height: 180px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  font: inherit;
+}
+
+.share-target .btn-big {
+  width: 100%;
+}

@@ -7,13 +7,16 @@ export function AddBar({
   version,
   onAdd,
   compact,
+  initial,
 }: {
   ld: ListDoc
   version: number
   onAdd: (items: ParsedItem[]) => void
   compact: boolean
+  /** Text shared into the app, waiting for the user to confirm with + */
+  initial?: string
 }) {
-  const [text, setText] = useState('')
+  const [text, setText] = useState(initial ?? '')
   const input = useRef<HTMLInputElement>(null)
   const suggestions = useMemo<HistoryEntry[]>(() => {
     const last = text.split(/[,\n;]/).pop() ?? ''

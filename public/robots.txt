@@ -8,5 +8,6 @@ Allow: /llms.txt
 Allow: /assets/
 Disallow: /*.*.
 Disallow: /list
+Disallow: /share-target
 
 Sitemap: https://weneedbananas.com/sitemap.xml

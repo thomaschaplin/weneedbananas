@@ -212,3 +212,65 @@ for (const width of [320, 360]) {
     }
   })
 }
+
+test('copy the list as plain text, grouped by aisle', async ({ page, context }) => {
+  await new MockRelay().attach(context)
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await page.goto('/lemon.fork.bulb')
+  await add(page, '6 bananas, 2 pints milk (semi-skimmed), bread')
+  await expect(page.locator('.item')).toHaveCount(3)
+  await page.getByRole('tab', { name: /at the shop/i }).click()
+  await page.getByRole('button', { name: 'Got bread' }).click()
+
+  await page.getByRole('button', { name: 'Share list lemon.fork.bulb' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Share this list' })
+  await sheet.getByRole('button', { name: 'Copy items as text' }).click()
+  await expect(sheet.getByRole('button', { name: 'Copied ✓' })).toBeVisible()
+  const text = await page.evaluate(() => navigator.clipboard.readText())
+  expect(text).toBe(
+    [
+      'Shopping list (lemon.fork.bulb)',
+      '',
+      '🥦 Fruit & veg',
+      '- 6 bananas',
+      '',
+      '🧀 Dairy, eggs & chilled',
+      '- 2 pints milk (semi-skimmed)',
+      '',
+      'Shared list: https://weneedbananas.com/lemon.fork.bulb',
+    ].join('\n'),
+  )
+})
+
+test('text shared into the app goes into the chosen list for confirmation', async ({ page, context }) => {
+  await new MockRelay().attach(context)
+  await page.goto('/apple.chair.lamp')
+  await expect(page.getByText('Nothing on the list yet')).toBeVisible()
+
+  const shared = '100g flour\n2 eggs\nhttps://example.com/pancakes'
+  await page.goto(`/share-target?title=Pancakes&text=${encodeURIComponent(shared)}`)
+  // The shared text is gone from the address bar straight away.
+  await expect(page).toHaveURL(/\/share-target$/)
+  await expect(page.getByRole('heading', { name: 'Add to which list?' })).toBeVisible()
+  await expect(page.getByText('2 items to check before adding')).toBeVisible()
+  await page.getByRole('link', { name: /apple\.chair\.lamp/ }).click()
+
+  await expect(page).toHaveURL(/\/apple\.chair\.lamp$/)
+  await expect(page.getByLabel('Add an item')).toHaveValue('100g flour, 2 eggs')
+  await expect(page.locator('.item')).toHaveCount(0)
+  await page.getByLabel('Add an item').press('Enter')
+  await expect(page.locator('.item')).toHaveCount(2)
+
+  // Starting a new list from a share works too.
+  await page.goto(`/share-target?text=${encodeURIComponent('bananas')}`)
+  await page.getByRole('button', { name: 'Start a new list' }).click()
+  await expect(page).toHaveURL(SLUG)
+  await expect(page.getByLabel('Add an item')).toHaveValue('bananas')
+})
+
+test('share target page is noindex and in the manifest', async ({ request }) => {
+  const html = await (await request.get('/share-target?text=eggs')).text()
+  expect(html).toContain('noindex')
+  const manifest = await (await request.get('/manifest.webmanifest')).json()
+  expect(manifest.share_target).toMatchObject({ action: '/share-target', method: 'GET' })
+})
