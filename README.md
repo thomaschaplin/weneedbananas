@@ -15,6 +15,7 @@ Auto aisle grouping (`src/lib/aisles.ts`) with a per-list aisle order, quantity 
 ## SEO / AEO / privacy
 
 - `/`, `/how-it-works` and `/privacy` are prerendered at build time (`scripts/prerender.tsx`, run before the service worker is generated so its precache sees the final HTML) with JSON-LD (WebApplication, FAQPage, Article). `public/llms.txt`, `robots.txt` and `sitemap.xml` are included.
+- Use-case guides (`/shared-shopping-list-no-signup`, `/family-shopping-list`, `/shopping-list-app-alternatives`) are prerendered the same way from `src/landing/` with copy and FAQs in `src/guides.ts` (Article, FAQPage and BreadcrumbList JSON-LD).
 - `404.html` (served by Vercel for unknown paths, with a "did you mean this list?" hint) and `offline.html` (shown by the service worker when an uncached page can't load) are prerendered and `noindex`. The 404 reports itself to analytics as `/404` so a mistyped list name never leaves the device.
 - List pages (`/word.word.word` → `list.html`) are `noindex` via meta tag **and** `X-Robots-Tag`, are disallowed in `robots.txt`, are excluded from the sitemap, and send `Referrer-Policy: no-referrer` (see `vercel.json`).
 

@@ -30,3 +30,6 @@
 - [Home](https://weneedbananas.com/): start or join a list, features and FAQ
 - [How it works](https://weneedbananas.com/how-it-works): how sync works without a server
 - [Privacy](https://weneedbananas.com/privacy): what is and isn't collected
+- [Shared list with no signup](https://weneedbananas.com/shared-shopping-list-no-signup): sharing a shopping list without an account, and what that means for privacy
+- [Family shopping list](https://weneedbananas.com/family-shopping-list): one list for households, flatmates and couples
+- [Compared with other apps](https://weneedbananas.com/shopping-list-app-alternatives): how it differs from typical account-based list apps, including what it doesn't do (no notifications, no recipe import from links, relay copies expire after 30 days unused)

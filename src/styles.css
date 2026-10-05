@@ -1742,3 +1742,13 @@ h1 {
 .sync-info p {
   margin: 0 0 12px;
 }
+
+/* Footer guide links (Layout.tsx): wrap on narrow phones. */
+.site-footer nav {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+.site-footer nav + nav {
+  margin-top: 10px;
+}
