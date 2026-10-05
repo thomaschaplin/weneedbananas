@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { deriveSecrets } from '../src/lib/crypto'
 import { addItems, allItems, createListDoc, setDone } from '../src/lib/doc'
-import { Mailbox, type MailboxState } from '../src/lib/mailbox'
+import { EXPIRY_SECONDS, Mailbox, type MailboxState } from '../src/lib/mailbox'
 import { parseMany } from '../src/lib/parse'
 
 type Ev = { id: string; pubkey: string; kind: number; created_at: number; tags: string[][] }
@@ -168,6 +168,33 @@ describe('mailbox', () => {
     await until(() => b.state() === 'saved' && allItems(b.ld).length === 1)
     await new Promise((r) => setTimeout(r, 1200))
     expect([...relay.stored.values()][0].id).toBe(first)
+  })
+
+  it('asks relays to drop the copy 30 days after it was last refreshed', async () => {
+    const a = device()
+    addItems(a.ld, parseMany('eggs'))
+    await a.mb.start(true)
+    await until(() => a.state() === 'saved')
+    const ev = [...relay.stored.values()][0]
+    const expiry = Number(ev.tags.find((t) => t[0] === 'expiration')?.[1])
+    expect(EXPIRY_SECONDS).toBe(30 * 24 * 60 * 60)
+    expect(expiry - ev.created_at).toBe(EXPIRY_SECONDS)
+  })
+
+  it('ignores a copy that has expired but not yet been purged', async () => {
+    const a = device()
+    addItems(a.ld, parseMany('eggs'))
+    await a.mb.start(true)
+    await until(() => a.state() === 'saved')
+    const ev = [...relay.stored.values()][0]
+    ev.tags = ev.tags.map((t) =>
+      t[0] === 'expiration' ? ['expiration', String(Math.floor(Date.now() / 1000) - 1)] : t,
+    )
+
+    const b = device()
+    await b.mb.start(false)
+    await until(() => b.state() === 'saved')
+    expect(allItems(b.ld)).toHaveLength(0)
   })
 
   it('ignores copies it cannot decrypt', async () => {

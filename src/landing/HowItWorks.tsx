@@ -113,8 +113,10 @@ export function HowItWorks() {
           while you're connected to someone directly.
         </p>
         <p>
-          The relays are run by volunteers and don't promise to keep anything forever, so the copy on each phone is
-          always the real list. The relay copy is just how changes get between phones that aren't open at the same time.
+          Each copy is marked to expire 30 days after the list was last opened or changed, and the relays delete it
+          then. A list someone is still using is refreshed every time it's opened, so it never runs out. The relays are
+          run by volunteers and don't promise to keep anything, so the copy on each phone is always the real list. The
+          relay copy is just how changes get between phones that aren't open at the same time.
         </p>
 
         <h2>Built for shopping</h2>

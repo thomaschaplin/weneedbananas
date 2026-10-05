@@ -12,6 +12,9 @@ export const MAILBOX_RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://r
 const KIND = 30078
 const D_TAG = 'weneedbananas'
 const VERSION = 'v1:'
+// Relays drop the copy this long after the list was last opened or edited (NIP-40). Every device with the list
+// republishes when it opens it, so only lists nobody uses any more expire.
+export const EXPIRY_SECONDS = 30 * 24 * 60 * 60
 // Relays commonly reject events over 64-128 KB; a shopping list is a few KB.
 const MAX_CONTENT = 60_000
 const PUBLISH_DELAY_MS = 800
@@ -211,6 +214,9 @@ export class Mailbox {
     if (!ev || ev.pubkey !== this.pubkey || ev.kind !== KIND || this.seen.has(ev.id)) return
     this.seen.add(ev.id)
     if (!this.aesKey || !ev.content.startsWith(VERSION)) return
+    // A relay that hasn't purged it yet may still hand out an expired copy.
+    const expiry = Number(ev.tags.find((t) => t[0] === 'expiration')?.[1])
+    if (expiry && expiry <= Date.now() / 1000) return
     this.lastCreatedAt = Math.max(this.lastCreatedAt, ev.created_at)
     if (ev.id === this.latest?.id) return
     let update: Uint8Array
@@ -290,7 +296,10 @@ export class Mailbox {
     // Relays keep the event with the newest created_at, so never go backwards.
     const created_at = Math.max(Math.floor(Date.now() / 1000), this.lastCreatedAt + 1)
     this.lastCreatedAt = created_at
-    const tags = [['d', D_TAG]]
+    const tags = [
+      ['d', D_TAG],
+      ['expiration', String(created_at + EXPIRY_SECONDS)],
+    ]
     const id = new Uint8Array(
       await crypto.subtle.digest(
         'SHA-256',

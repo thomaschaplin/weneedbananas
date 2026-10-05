@@ -19,7 +19,7 @@ export const FAQ: QA[] = [
   },
   {
     q: 'Where is my list stored?',
-    a: 'On your own devices. Every phone or computer that opens the list keeps a full copy in the browser, and copies sync directly between devices over an encrypted peer-to-peer connection (WebRTC). So that a phone opening the list later still gets your changes, an encrypted copy also waits on a few public Nostr relays, which cannot read it. We have no database and no server of our own that stores lists.',
+    a: 'On your own devices. Every phone or computer that opens the list keeps a full copy in the browser, and copies sync directly between devices over an encrypted peer-to-peer connection (WebRTC). So that a phone opening the list later still gets your changes, an encrypted copy also waits on a few public Nostr relays, which cannot read it and delete it 30 days after the list was last used. We have no database and no server of our own that stores lists.',
   },
   {
     q: 'Do both phones need the list open to sync?',
