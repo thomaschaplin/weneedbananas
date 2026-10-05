@@ -140,6 +140,30 @@ test('a device that opens the list after the first has gone still gets the items
   await b.close()
 })
 
+test('warns before a list that lives on one device could be lost', async ({ browser }) => {
+  const relay = new MockRelay()
+  const slug = 'pear.drum.kite'
+  const ctx = await browser.newContext()
+  await relay.attach(ctx)
+  const page = await ctx.newPage()
+
+  await page.goto(`/${slug}`)
+  await add(page, 'milk')
+  await page.getByRole('button', { name: 'Sync status: Up to date' }).click({ timeout: 15_000 })
+  const sheet = page.getByRole('dialog', { name: 'Sync' })
+  await expect(sheet).toContainText('Only this device has this list.')
+  await expect(sheet).toContainText(/relay copy is kept until .+ \(in 30 days\)/)
+
+  // A list not opened here for 26 days gets a nudge on the home page.
+  await page.evaluate((s) => {
+    const old = Date.now() - 26 * 24 * 60 * 60 * 1000
+    localStorage.setItem('wnb:recent', JSON.stringify([{ slug: s, openedAt: old, todo: 1 }]))
+  }, slug)
+  await page.goto('/')
+  await expect(page.getByRole('link', { name: /pear\.drum\.kite/ })).toContainText('Open to keep it safe · 4 days left')
+  await ctx.close()
+})
+
 test('shop mode asks for your name and confirms it saved', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Start a new list' }).click()

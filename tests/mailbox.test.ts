@@ -181,6 +181,25 @@ describe('mailbox', () => {
     expect(expiry - ev.created_at).toBe(EXPIRY_SECONDS)
   })
 
+  it('reports when the copy a relay holds will expire', async () => {
+    const a = device()
+    let aExpires: number | null | undefined
+    a.mb.subscribe((s) => (aExpires = s.expiresAt))
+    addItems(a.ld, parseMany('eggs'))
+    await a.mb.start(true)
+    await until(() => a.state() === 'saved' && !!aExpires)
+    const ev = [...relay.stored.values()][0]
+    expect(aExpires).toBe((ev.created_at + EXPIRY_SECONDS) * 1000)
+
+    // A device that only fetches the copy learns the same date.
+    const b = device()
+    let bExpires: number | null | undefined
+    b.mb.subscribe((s) => (bExpires = s.expiresAt))
+    await b.mb.start(false)
+    await until(() => !!bExpires)
+    expect(bExpires).toBe(aExpires)
+  })
+
   it('ignores a copy that has expired but not yet been purged', async () => {
     const a = device()
     addItems(a.ld, parseMany('eggs'))

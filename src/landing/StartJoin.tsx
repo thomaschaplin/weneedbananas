@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks'
 import { generateSlug, parseSlugInput } from '../lib/slug'
 import { recentLists, type RecentList } from '../lib/recent'
+import { recentHint } from '../lib/expiry'
 
 export function StartJoin() {
   const [value, setValue] = useState('')
@@ -76,14 +77,19 @@ export function StartJoin() {
         <div class="recent">
           <h2>Your lists on this device</h2>
           <ul>
-            {recent.map((r) => (
-              <li key={r.slug}>
-                <a href={`/${r.slug}`}>
-                  <span class="slug">{r.slug}</span>
-                  <span class="muted">{r.todo ? `${r.todo} to get` : 'all done'}</span>
-                </a>
-              </li>
-            ))}
+            {recent.map((r) => {
+              // Only rendered after hydration (recents start empty), so reading the clock here is safe.
+              const hint = recentHint(r.openedAt, Date.now())
+              return (
+                <li key={r.slug}>
+                  <a href={`/${r.slug}`}>
+                    <span class="slug">{r.slug}</span>
+                    <span class="muted">{r.todo ? `${r.todo} to get` : 'all done'}</span>
+                    {hint && <span class="recent-hint">{hint}</span>}
+                  </a>
+                </li>
+              )
+            })}
           </ul>
         </div>
       )}

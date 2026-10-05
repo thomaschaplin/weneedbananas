@@ -1,5 +1,6 @@
 import type { MailboxStatus } from '../lib/mailbox'
 import type { SyncStatus } from '../lib/p2p'
+import { EXPIRY_DAYS, daysLeft, inDays } from '../lib/expiry'
 
 export function syncLabel(
   s: SyncStatus,
@@ -82,6 +83,7 @@ export function SyncInfo({
         </p>
       )}
       <p class="muted">Last synced with another device: {timeAgo(lastSync)}.</p>
+      <KeepSafe mailbox={mailbox} alone={!lastSync && status.peers === 0} />
       <p class="muted small">
         There are no accounts and no database of lists. Every device keeps a full copy and they update each other
         directly. An encrypted copy also waits on public Nostr relays for devices that open the list later; the relays
@@ -93,3 +95,29 @@ export function SyncInfo({
     </div>
   )
 }
+
+/**
+ * When the relay copy runs out, and a nudge to share if no other device has ever synced this list. `lastSync`
+ * is remembered per list on this device whenever a peer connects or the mailbox brings in someone else's changes.
+ */
+function KeepSafe({ mailbox, alone }: { mailbox: MailboxStatus; alone: boolean }) {
+  const expiresAt = mailbox.expiresAt
+  return (
+    <>
+      {expiresAt ? (
+        <p class="muted small keep-safe">
+          The encrypted relay copy is kept until {new Date(expiresAt).toLocaleDateString(undefined, dateOpts)} (
+          {inDays(daysLeft(expiresAt, Date.now()))}). Opening or editing the list on any device pushes that back another{' '}
+          {EXPIRY_DAYS} days.
+        </p>
+      ) : null}
+      {alone && (
+        <p class="keep-safe-alone">
+          <strong>Only this device has this list.</strong> Share the words so it's not lost if you lose this phone.
+        </p>
+      )}
+    </>
+  )
+}
+
+const dateOpts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
