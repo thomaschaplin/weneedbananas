@@ -5,7 +5,10 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [{ "source": "/:slug([A-Za-z]+\\.[A-Za-z]+\\.[A-Za-z]+)", "destination": "/list" }],
+  "rewrites": [
+    { "source": "/:slug([A-Za-z]+\\.[A-Za-z]+\\.[A-Za-z]+)", "destination": "/list" },
+    { "source": "/share-target", "destination": "/list" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -25,6 +28,14 @@
       "source": "/:slug([A-Za-z]+\\.[A-Za-z]+\\.[A-Za-z]+)",
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    },
+    {
+      "source": "/share-target",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive, nosnippet" },
         { "key": "Referrer-Policy", "value": "no-referrer" },
         { "key": "Cache-Control", "value": "no-store" }
       ]

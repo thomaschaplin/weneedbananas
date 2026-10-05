@@ -37,7 +37,7 @@ type SheetKind = null | 'share' | 'menu' | 'sync' | { edit: string }
 
 const modeKey = (slug: string) => `wnb:mode:${slug}`
 
-export function ListApp({ slug }: { slug: string }) {
+export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
   const { ld, version, loaded, status, mailbox, lastSync, provider, removeLocal } = useList(slug)
   const [shopMode, setShopMode] = useState(() => {
     try {
@@ -251,10 +251,10 @@ export function ListApp({ slug }: { slug: string }) {
         )}
       </main>
 
-      <AddBar ld={ld} version={version} onAdd={onAdd} compact={shopMode} />
+      <AddBar ld={ld} version={version} onAdd={onAdd} compact={shopMode} initial={prefill} />
 
       <Sheet open={sheet === 'share'} onClose={() => setSheet(null)} title="Share this list">
-        <ShareContent slug={slug} />
+        <ShareContent slug={slug} items={items} order={order} />
       </Sheet>
       <Sheet open={sheet === 'sync'} onClose={() => setSheet(null)} title="Sync">
         <SyncInfo status={status} mailbox={mailbox} lastSync={lastSync} onShare={() => setSheet('share')} />

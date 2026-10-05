@@ -1,9 +1,13 @@
 import qrcode from 'qrcode-generator'
 import { useMemo, useState } from 'preact/hooks'
+import type { Item } from '../lib/doc'
+import { listAsText } from '../lib/export'
 
-export function ShareContent({ slug }: { slug: string }) {
+export function ShareContent({ slug, items, order }: { slug: string; items?: Item[]; order?: string[] }) {
   const url = `https://weneedbananas.com/${slug}`
   const [copied, setCopied] = useState(false)
+  const [copiedText, setCopiedText] = useState(false)
+  const text = () => listAsText(slug, items ?? [], order ?? [], url)
   const qrSvg = useMemo(() => {
     const qr = qrcode(0, 'M')
     qr.addData(url)
@@ -24,6 +28,24 @@ export function ShareContent({ slug }: { slug: string }) {
   const share = async () => {
     try {
       await navigator.share({ title: 'Our shopping list', text: `Our shopping list: ${slug}`, url })
+    } catch {
+      /* cancelled */
+    }
+  }
+
+  const copyText = async () => {
+    try {
+      await navigator.clipboard.writeText(text())
+      setCopiedText(true)
+      setTimeout(() => setCopiedText(false), 2000)
+    } catch {
+      /* clipboard blocked */
+    }
+  }
+
+  const shareText = async () => {
+    try {
+      await navigator.share({ text: text() })
     } catch {
       /* cancelled */
     }
@@ -51,6 +73,21 @@ export function ShareContent({ slug }: { slug: string }) {
         Anyone with these three words can see and edit this list, so share them only with the people you shop with. Say
         them out loud, scan the code, or type them on the home page.
       </p>
+      {items && items.some((i) => !i.done) && (
+        <div class="share-text">
+          <p class="muted small">Or send what's left to get as a plain message, with the list link at the bottom.</p>
+          <div class="share-actions">
+            <button type="button" class="btn" onClick={copyText}>
+              {copiedText ? 'Copied ✓' : 'Copy items as text'}
+            </button>
+            {'share' in navigator && (
+              <button type="button" class="btn" onClick={shareText}>
+                Send items as text
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -24,6 +24,7 @@ const rewrites: Connect.NextHandleFunction = (req, res, next) => {
   const url = req.url ?? '/'
   const path = url.split(/[?#]/)[0]
   if (LIST_PATH.test(url)) req.url = '/list.html'
+  else if (path === '/share-target') req.url = '/list.html'
   else if (PAGES.includes(path.slice(1))) req.url = `${path}.html`
   else if (req.headers.accept?.includes('text/html') && !isFile(path)) {
     req.url = '/404.html'
@@ -72,13 +73,16 @@ export default defineConfig({
           { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
           { src: '/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
+        // Android: share text (say, a recipe's ingredients) into the installed app. The list app
+        // shell handles /share-target and asks which list it goes on.
+        share_target: { action: '/share-target', method: 'GET', params: { title: 'title', text: 'text', url: 'url' } },
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
         globIgnores: ['og.png'],
         // Any /word.word.word opens the (cached) app shell, so lists work offline.
         navigateFallback: '/list.html',
-        navigateFallbackAllowlist: [/^\/[a-z]+\.[a-z]+\.[a-z]+\/?$/i],
+        navigateFallbackAllowlist: [/^\/[a-z]+\.[a-z]+\.[a-z]+\/?$/i, /^\/share-target\/?(?:\?.*)?$/],
         // Any other page that isn't precached: go to the network, and show the offline page if that fails.
         runtimeCaching: [
           {

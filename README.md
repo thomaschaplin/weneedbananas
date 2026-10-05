@@ -12,6 +12,8 @@ A shared shopping list at **weneedbananas.com** with no signup and no backend. A
 
 Auto aisle grouping (`src/lib/aisles.ts`) with a per-list aisle order, quantity parsing and duplicate merging (`src/lib/parse.ts`), a Shop mode (wake lock, big targets, progress), "couldn't find it", "done shopping" with undo, usuals, paste-a-recipe, "someone's at the shop" presence, and offline PWA.
 
+Plain text in and out (`src/lib/export.ts`): the share sheet can copy or send what's left to get as a message, grouped by aisle with the list link at the bottom. The installed PWA is a Web Share Target (`/share-target`, served by the list shell, `noindex`): text shared from another app (say, a recipe's ingredients) lands on a "which list?" chooser of recent lists or a new one, then waits in that list's add bar for you to confirm. The installed app's service worker answers `/share-target?text=…` from its cache; the page clears the query from the address bar before analytics loads (which strips queries and hashes anyway) and hands the text to the list in the URL hash, which browsers never send to a server.
+
 ## SEO / AEO / privacy
 
 - `/`, `/how-it-works` and `/privacy` are prerendered at build time (`scripts/prerender.tsx`, run before the service worker is generated so its precache sees the final HTML) with JSON-LD (WebApplication, FAQPage, Article). `public/llms.txt`, `robots.txt` and `sitemap.xml` are included.
