@@ -1742,3 +1742,34 @@ h1 {
 .sync-info p {
   margin: 0 0 12px;
 }
+
+/* Usual chip with a forget button: the dashed pill wraps both buttons. */
+.chip-group {
+  flex: none;
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 999px;
+  border: 1.5px dashed var(--banana-deep);
+}
+
+.chip-group .chip {
+  border: 0;
+  padding-right: 4px;
+}
+
+.chip-x {
+  min-width: 34px;
+  min-height: 36px;
+  padding: 0 12px 0 6px;
+  border: 0;
+  border-radius: 0 999px 999px 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.chip-x:hover,
+.chip-x:focus-visible {
+  color: inherit;
+}

@@ -5,6 +5,7 @@ import {
   allItems,
   clearAll,
   finishShop,
+  forgetUsual,
   getAisleOrder,
   groupByAisle,
   removeItem,
@@ -197,14 +198,27 @@ export function ListApp({ slug }: { slug: string }) {
           <span class="usuals-label">Usuals</span>
           <div class="chips">
             {usual.map((u) => (
-              <button
-                key={u.name}
-                type="button"
-                class="chip"
-                onClick={() => onAdd([{ name: u.name, qty: null, unit: null, note: null }])}
-              >
-                + {u.name}
-              </button>
+              <span key={u.key} class="chip-group">
+                <button
+                  type="button"
+                  class="chip"
+                  onClick={() => onAdd([{ name: u.name, qty: null, unit: null, note: null }])}
+                >
+                  + {u.name}
+                </button>
+                <button
+                  type="button"
+                  class="chip-x"
+                  aria-label={`Forget ${u.name}`}
+                  title={`Forget ${u.name}`}
+                  onClick={() => {
+                    forgetUsual(ld, u.key)
+                    say(`Forgot ${u.name}`, true)
+                  }}
+                >
+                  ✕
+                </button>
+              </span>
             ))}
           </div>
         </div>
