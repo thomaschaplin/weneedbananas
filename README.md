@@ -10,7 +10,7 @@ A shared shopping list at **weneedbananas.com** with no signup and no backend. A
 
 ## Shopping features
 
-Auto aisle grouping (`src/lib/aisles.ts`) with a per-list aisle order, quantity parsing and duplicate merging (`src/lib/parse.ts`), a Shop mode (wake lock, big targets, progress), "couldn't find it", "done shopping" with undo, usuals, paste-a-recipe, "someone's at the shop" presence, and offline PWA.
+Auto aisle grouping (`src/lib/aisles.ts`) with a per-list aisle order, quantity parsing and duplicate merging (`src/lib/parse.ts`), a Shop mode (wake lock, big targets, progress), "couldn't find it", "done shopping" with undo, usuals, paste-a-recipe, "someone's at the shop" presence, "move to new words" (copies the list to fresh words and leaves only a "this list has moved" marker, without the new words, under the old ones; `src/lib/move.ts`), and offline PWA.
 
 ## SEO / AEO / privacy
 

@@ -143,6 +143,29 @@ export class Mailbox {
     this.flush()
   }
 
+  /**
+   * Send this device's copy now, without waiting for the first fetch (as when the page is hidden), and wait for
+   * a relay to confirm it. Resolves true once a relay holds everything this device has, false on timeout.
+   */
+  async flushNow(timeoutMs = 8_000): Promise<boolean> {
+    const end = Date.now() + timeoutMs
+    const tick = () => new Promise((r) => setTimeout(r, 100))
+    while (!this.secretKey) {
+      if (this.destroyed || Date.now() > end) return false
+      await tick()
+    }
+    this.ready = true
+    if (this.timer) clearTimeout(this.timer)
+    this.timer = null
+    if (this.dirty) await this.publish()
+    for (;;) {
+      const id = this.latest?.id
+      if (!this.dirty && id && this.relays.some((r) => r.ackedId === id)) return true
+      if (this.destroyed || Date.now() > end) return false
+      await tick()
+    }
+  }
+
   destroy(): void {
     this.destroyed = true
     if (this.timer) clearTimeout(this.timer)

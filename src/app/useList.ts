@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { IndexeddbPersistence } from 'y-indexeddb'
 import { createListDoc } from '../lib/doc'
 import { Mailbox, type MailboxStatus } from '../lib/mailbox'
+import { moveList } from '../lib/move'
 import { P2PProvider, type SyncStatus } from '../lib/p2p'
 import { getName } from '../lib/recent'
 
@@ -86,5 +87,17 @@ export function useList(slug: string) {
     }
   }
 
-  return { ld, version, loaded, status, mailbox, lastSync, provider, removeLocal }
+  /**
+   * Move this list to new words and return them. Once the old list's "moved" marker has reached a relay
+   * (open devices get it straight away), this device lets the old list go; if no relay confirms it, the old
+   * copy stays on this device so the marker isn't lost.
+   */
+  const moveToNewWords = async (): Promise<string> => {
+    const next = await moveList(ld, slug)
+    const saved = (await box.current?.flushNow()) ?? false
+    if (saved) await removeLocal()
+    return next
+  }
+
+  return { ld, version, loaded, status, mailbox, lastSync, provider, removeLocal, moveToNewWords }
 }

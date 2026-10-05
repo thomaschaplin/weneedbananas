@@ -229,6 +229,29 @@ export function setAisleOrder(ld: ListDoc, order: string[]): void {
   ld.doc.transact(() => ld.meta.set('aisleOrder', order), LOCAL)
 }
 
+/** The list has been moved to new words. Where to is deliberately not stored. */
+export function isMoved(ld: ListDoc): boolean {
+  return ld.meta.get('moved') === true
+}
+
+/**
+ * Move a list to new words: returns its whole state (items, usuals, aisle order) as a Yjs update to seed the
+ * new list, then empties this one and marks it moved. The new words are never written here, or anyone who
+ * still has the old words would learn them. Not undoable: undo would put the items back under the old words.
+ */
+export function moveOut(ld: ListDoc): Uint8Array {
+  const state = Y.encodeStateAsUpdate(ld.doc)
+  ld.doc.transact(() => {
+    ld.items.forEach((_, id) => ld.items.delete(id))
+    ld.history.forEach((_, key) => ld.history.delete(key))
+    ld.aisleFor.forEach((_, key) => ld.aisleFor.delete(key))
+    ld.meta.set('moved', true)
+    ld.meta.set('movedAt', Date.now())
+  })
+  ld.undo.clear()
+  return state
+}
+
 export interface AisleGroup {
   aisle: string
   todo: Item[]
