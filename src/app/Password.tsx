@@ -7,9 +7,10 @@ import type { PasskeyControls, PasswordControls } from './ListApp'
 
 const passkeyErrorText = (e: unknown) => passkeyError(e, "Couldn't use a passkey. Type the password instead.")
 
-/** What to say when a passkey couldn't be used; nothing if the prompt was just closed. */
+/** What to say when a passkey couldn't be used. */
 function passkeyError(e: unknown, fallback: string): string {
-  if (cancelled(e)) return ''
+  // Also what a browser says when it refuses the request, so it's never silent.
+  if (cancelled(e)) return 'No passkey was used. Try again.'
   if (e instanceof NoPrfError) return "This device's passkeys can't unlock lists yet."
   return fallback
 }

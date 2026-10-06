@@ -19,10 +19,12 @@ const b64url = (b: Uint8Array) =>
 const unb64url = (s: string): Uint8Array<ArrayBuffer> =>
   Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0))
 
-/** What the passkey is asked to turn into a secret: different for every list and every password set on it. */
-async function prfInput(slug: string, salt: string): Promise<Uint8Array<ArrayBuffer>> {
-  return new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(`${INFO}\n${slug}\n${salt}`)))
-}
+/**
+ * What the passkey is asked to turn into a secret: different for every list and every password set on it. The
+ * passkey hashes it itself. Made without awaiting anything: browsers only show a passkey prompt straight from a
+ * tap, and Safari treats a request made after an `await` as not coming from one.
+ */
+const prfInput = (slug: string, salt: string) => enc.encode(`${INFO}\n${slug}\n${salt}`)
 
 async function sealKey(secret: Uint8Array<ArrayBuffer>, usage: KeyUsage): Promise<CryptoKey> {
   const base = await crypto.subtle.importKey('raw', secret, 'HKDF', false, ['deriveKey'])
@@ -87,7 +89,7 @@ export class NoPrfError extends Error {
   }
 }
 
-/** Someone closed the passkey prompt, or it timed out. Not worth an error message. */
+/** The passkey prompt was closed, timed out, or refused by the browser; it doesn't say which. */
 export const cancelled = (e: unknown) => e instanceof DOMException && e.name === 'NotAllowedError'
 
 type PrfResults = { prf?: { enabled?: boolean; results?: { first?: BufferSource } } }
@@ -125,7 +127,8 @@ async function getSecret(
  * so it can be told apart from others in a password manager, which is a place meant for secrets.
  */
 export async function createPasskey(slug: string, lock: Lock): Promise<{ id: string; entry: PasskeyEntry }> {
-  const input = await prfInput(slug, lock.salt)
+  // Nothing may be awaited before the prompt: see prfInput.
+  const input = prfInput(slug, lock.salt)
   const cred = (await navigator.credentials.create({
     publicKey: {
       rp: { name: 'We Need Bananas' },
@@ -162,7 +165,7 @@ export async function unlockWithPasskey(
   info: LockInfo,
   entries: Map<string, PasskeyEntry>,
 ): Promise<Lock | null> {
-  const got = await getSecret(await prfInput(slug, info.salt), [...entries.keys()])
+  const got = await getSecret(prfInput(slug, info.salt), [...entries.keys()])
   const entry = got && entries.get(got.id)
   if (!got || !entry) return null
   const password = await unseal(slug, entry, got.secret)

@@ -1,12 +1,12 @@
 import 'fake-indexeddb/auto'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { IndexeddbPersistence } from 'y-indexeddb'
 import type { Lock } from '../src/lib/crypto'
 import { addItems, addPasskey, createListDoc, lockInfo, passkeys, removePasskeys, type ListDoc } from '../src/lib/doc'
 import { changePassword, removePassword, setPassword, tryPassword } from '../src/lib/lock'
 import { storeName } from '../src/lib/move'
 import { parseMany } from '../src/lib/parse'
-import { seal, unseal } from '../src/lib/passkey'
+import { createPasskey, seal, unlockWithPasskey, unseal } from '../src/lib/passkey'
 
 const SLUG = 'lemon.fork.bulb'
 const secret = (n: number) => new Uint8Array(32).fill(n)
@@ -73,5 +73,22 @@ describe('passkeys', () => {
     // e.g. arriving late from a device that hadn't seen the change.
     addPasskey(open, 'stale', await seal(SLUG, { ...lock, salt: 'old' }, secret(1)))
     expect(passkeys(open).size).toBe(0)
+  })
+})
+
+describe('passkey prompts', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  // Browsers only show a passkey prompt straight from a tap; Safari refuses one asked for after an await, which
+  // let a passkey unlock a list once and then silently do nothing.
+  it('are asked for without awaiting anything first', async () => {
+    const get = vi.fn(() => new Promise<never>(() => {}))
+    const create = vi.fn(() => new Promise<never>(() => {}))
+    vi.stubGlobal('navigator', { credentials: { get, create } })
+
+    void unlockWithPasskey(SLUG, { salt: 'ab', key: 'cd' }, new Map([['AQID', { salt: 'ab', iv: '', ct: '' }]]))
+    expect(get).toHaveBeenCalledTimes(1)
+    void createPasskey(SLUG, { password: 'banana split 99', salt: 'ab' })
+    expect(create).toHaveBeenCalledTimes(1)
   })
 })
