@@ -1,6 +1,6 @@
 import { schnorr } from '@noble/secp256k1'
 import * as Y from 'yjs'
-import { deriveSecrets } from './crypto'
+import { deriveSecrets, type ListScope } from './crypto'
 import { EXPIRY_DAYS } from './expiry'
 
 /**
@@ -95,7 +95,7 @@ export class Mailbox {
 
   constructor(
     private doc: Y.Doc,
-    private slug: string,
+    private scope: string | ListScope,
     urls: string[] = MAILBOX_RELAYS,
     private WS: typeof WebSocket = WebSocket,
   ) {
@@ -110,7 +110,7 @@ export class Mailbox {
 
   /** Call once the device's own copy has loaded, so the first publish includes it. */
   async start(hasContent: boolean): Promise<void> {
-    const { mailboxKey, contentKey } = await deriveSecrets(this.slug)
+    const { mailboxKey, contentKey } = await deriveSecrets(this.scope)
     if (this.destroyed) return
     this.secretKey = mailboxKey
     this.pubkey = hex(schnorr.getPublicKey(mailboxKey))

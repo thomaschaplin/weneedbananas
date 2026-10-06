@@ -1,15 +1,17 @@
 import { IndexeddbPersistence } from 'y-indexeddb'
 import * as Y from 'yjs'
+import type { ListScope } from './crypto'
 import { moveOut, type ListDoc } from './doc'
 import { generateSlug } from './slug'
 
-/** IndexedDB database holding a list on this device. */
-export const storeName = (slug: string) => `wnb:${slug}`
+/** IndexedDB database holding a list on this device. A password list is kept apart from its words alone. */
+export const storeName = (scope: string | ListScope) =>
+  typeof scope === 'string' ? `wnb:${scope}` : scope.lock ? `wnb:${scope.slug}:${scope.lock.salt}` : `wnb:${scope.slug}`
 
 const sameState = (a: Y.Doc, b: Y.Doc) => Y.equalSnapshots(Y.snapshot(a), Y.snapshot(b))
 
 /** Write a doc into a list's store on this device and read it back, so it has really landed. */
-async function save(slug: string, doc: Y.Doc): Promise<void> {
+export async function save(slug: string | ListScope, doc: Y.Doc): Promise<void> {
   const write = new IndexeddbPersistence(storeName(slug), doc)
   await write.whenSynced
   await write.destroy()

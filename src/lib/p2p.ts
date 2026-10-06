@@ -1,6 +1,6 @@
 import { joinRoom, type Room } from 'trystero'
 import * as Y from 'yjs'
-import { deriveSecrets } from './crypto'
+import { deriveSecrets, type ListScope } from './crypto'
 
 export type Presence = {
   name: string
@@ -44,7 +44,7 @@ export class P2PProvider {
 
   constructor(
     private doc: Y.Doc,
-    private slug: string,
+    private scope: string | ListScope,
     me: Presence,
   ) {
     this.me = me
@@ -55,7 +55,7 @@ export class P2PProvider {
   }
 
   async connect(): Promise<void> {
-    const { roomId, password } = await deriveSecrets(this.slug)
+    const { roomId, password } = await deriveSecrets(this.scope)
     if (this.destroyed) return
     const room = joinRoom({ appId: APP_ID, password, relayConfig: { warnOnRelayFailure: false } }, roomId)
     this.room = room

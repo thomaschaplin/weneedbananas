@@ -4,7 +4,7 @@ import { initAnalytics } from '../lib/analytics'
 import { sharedText } from '../lib/export'
 import { SLUG_RE } from '../lib/slug'
 import { registerSW } from '../sw'
-import { ListApp } from './ListApp'
+import { ListRoute } from './ListRoute'
 import { ShareTarget } from './ShareTarget'
 
 const raw = decodeURIComponent(location.pathname.slice(1)).replace(/\/$/, '')
@@ -27,7 +27,7 @@ if (raw === 'share-target') {
 } else {
   if (raw !== slug || prefill !== undefined) history.replaceState(null, '', `/${slug}`)
   document.title = `${slug} · We Need Bananas`
-  render(<ListApp slug={slug} prefill={prefill} />, document.getElementById('app')!)
+  render(<ListRoute slug={slug} prefill={prefill} />, document.getElementById('app')!)
   registerSW()
   initAnalytics()
 }

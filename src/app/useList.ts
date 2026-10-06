@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { IndexeddbPersistence } from 'y-indexeddb'
+import type { Lock } from '../lib/crypto'
 import { createListDoc } from '../lib/doc'
 import { Mailbox, type MailboxStatus } from '../lib/mailbox'
-import { moveList } from '../lib/move'
+import { moveList, storeName } from '../lib/move'
 import { P2PProvider, type SyncStatus } from '../lib/p2p'
 import { getName } from '../lib/recent'
 
@@ -17,8 +18,13 @@ function readLastSync(slug: string): number | null {
   }
 }
 
-export function useList(slug: string) {
-  const ld = useMemo(() => createListDoc(), [slug])
+/**
+ * Open a list: the words alone, or with `lock` the password list behind them. `announce` is false for the list
+ * under the words alone once it has a password, so this device's name isn't shown to anyone without it.
+ */
+export function useList(slug: string, lock?: Lock, announce = true) {
+  const salt = lock?.salt
+  const ld = useMemo(() => createListDoc(), [slug, salt])
   const [version, setVersion] = useState(0)
   const [loaded, setLoaded] = useState(false)
   const [status, setStatus] = useState<SyncStatus>({
@@ -34,9 +40,10 @@ export function useList(slug: string) {
   const box = useRef<Mailbox | null>(null)
 
   useEffect(() => {
-    const idb = new IndexeddbPersistence(`wnb:${slug}`, ld.doc)
+    const scope = { slug, lock }
+    const idb = new IndexeddbPersistence(storeName(scope), ld.doc)
     persistence.current = idb
-    const mb = new Mailbox(ld.doc, slug)
+    const mb = new Mailbox(ld.doc, scope)
     box.current = mb
     const unsubBox = mb.subscribe(setMailbox)
     void idb.whenSynced.then(() => {
@@ -47,7 +54,7 @@ export function useList(slug: string) {
     const bump = () => setVersion((v) => v + 1)
     ld.doc.on('update', bump)
 
-    const p2p = new P2PProvider(ld.doc, slug, { name: getName(), shopping: false })
+    const p2p = new P2PProvider(ld.doc, scope, { name: announce ? getName() : '', shopping: false })
     provider.current = p2p
     const unsub = p2p.subscribe(setStatus)
     void p2p.connect()
@@ -60,7 +67,7 @@ export function useList(slug: string) {
       p2p.destroy()
       void idb.destroy()
     }
-  }, [ld, slug])
+  }, [ld, slug, salt])
 
   // Changes picked up from the mailbox came from another device too.
   const syncedAt = Math.max(status.lastSyncAt ?? 0, mailbox.receivedAt ?? 0) || null
@@ -99,5 +106,10 @@ export function useList(slug: string) {
     return next
   }
 
-  return { ld, version, loaded, status, mailbox, lastSync, provider, removeLocal, moveToNewWords }
+  /** Send this list's copy to the relays now; true once one holds it. */
+  const flush = async (): Promise<boolean> => (await box.current?.flushNow()) ?? false
+
+  return { ld, version, loaded, status, mailbox, lastSync, provider, removeLocal, moveToNewWords, flush }
 }
+
+export type ListHandle = ReturnType<typeof useList>

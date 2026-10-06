@@ -32,14 +32,47 @@ import { Sheet } from './Sheet'
 import { ShopIdentity } from './ShopIdentity'
 import { SyncBadge, SyncInfo } from './SyncBadge'
 import { Toast, type ToastData } from './Toast'
-import { useList } from './useList'
+import type { ListHandle } from './useList'
 
 type SheetKind = null | 'share' | 'menu' | 'sync' | { edit: string }
 
 const modeKey = (slug: string) => `wnb:mode:${slug}`
 
-export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
-  const { ld, version, loaded, status, mailbox, lastSync, provider, removeLocal, moveToNewWords } = useList(slug)
+/** Adding, changing and removing the list's password; the work happens in ListRoute, which holds both lists. */
+export interface PasswordControls {
+  /** This list is behind a password. */
+  locked: boolean
+  /** Add a password, or change it. */
+  set: (password: string) => Promise<void>
+  remove: () => Promise<void>
+}
+
+export function ListApp({
+  slug,
+  prefill,
+  list,
+  password,
+  working,
+  retired = false,
+  onReenter,
+  notice,
+  onNotice,
+}: {
+  slug: string
+  prefill?: string
+  list: ListHandle
+  password?: PasswordControls
+  /** Something is being done to the whole list, e.g. "Adding the password…". */
+  working?: string
+  /** This password list was left behind because its password changed or was removed. */
+  retired?: boolean
+  /** Forget the password this device has, to type the new one. */
+  onReenter?: () => void
+  /** A message to show that outlives this page, e.g. across the switch to the list behind a password. */
+  notice?: ToastData | null
+  onNotice?: (text: string) => void
+}) {
+  const { ld, version, loaded, status, mailbox, lastSync, provider, removeLocal, moveToNewWords } = list
   const [shopMode, setShopMode] = useState(() => {
     try {
       return localStorage.getItem(modeKey(slug)) === 'shop'
@@ -56,7 +89,8 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
   const groups = useMemo(() => groupByAisle(items, order), [items, order])
   const usual = useMemo(() => usuals(ld), [version])
   const moved = useMemo(() => isMoved(ld), [version])
-  const [moving, setMoving] = useState(false)
+  const [movingWords, setMoving] = useState(false)
+  const moving = movingWords || !!working
   const todo = items.filter((i) => !i.done).length
   const got = items.length - todo
 
@@ -67,6 +101,10 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
 
   const say = (text: string, undo?: boolean) =>
     setToast({ id: Date.now(), text, undo: undo ? () => ld.undo.undo() : undefined })
+
+  useEffect(() => {
+    if (notice) setToast(notice)
+  }, [notice?.id])
 
   useEffect(() => {
     if (loaded) rememberList(slug, todo)
@@ -257,9 +295,13 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
       <main class="list">
         {(moved || moving) && (
           <div class="empty" role="status">
-            <p class="empty-title">{moving ? 'Moving to new words…' : 'This list has been moved'}</p>
+            <p class="empty-title">{moving ? (working ?? 'Moving to new words…') : 'This list has been moved'}</p>
             {moving ? (
-              <p>Making sure everyone on the old words sees it has moved.</p>
+              <p>
+                {working
+                  ? 'Making sure every device on this list gets the change.'
+                  : 'Making sure everyone on the old words sees it has moved.'}
+              </p>
             ) : (
               <>
                 <p>Ask whoever moved it for the new words.</p>
@@ -270,7 +312,16 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
             )}
           </div>
         )}
-        {!loaded || moving || (moved && items.length === 0) ? null : items.length === 0 ? (
+        {retired && !moving && (
+          <div class="empty" role="status">
+            <p class="empty-title">This list's password has changed</p>
+            <p>Ask whoever changed it for the new password.</p>
+            <button type="button" class="btn" onClick={onReenter}>
+              Enter the new password
+            </button>
+          </div>
+        )}
+        {!loaded || moving || retired || (moved && items.length === 0) ? null : items.length === 0 ? (
           <Empty onShare={() => setSheet('share')} />
         ) : (
           groups.map((g) => (
@@ -297,10 +348,12 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
         )}
       </main>
 
-      {!moved && !moving && <AddBar ld={ld} version={version} onAdd={onAdd} compact={shopMode} initial={prefill} />}
+      {!moved && !moving && !retired && (
+        <AddBar ld={ld} version={version} onAdd={onAdd} compact={shopMode} initial={prefill} />
+      )}
 
       <Sheet open={sheet === 'share'} onClose={() => setSheet(null)} title="Share this list">
-        <ShareContent slug={slug} items={items} order={order} />
+        <ShareContent slug={slug} items={items} order={order} locked={password?.locked} />
       </Sheet>
       <Sheet open={sheet === 'sync'} onClose={() => setSheet(null)} title="Sync">
         <SyncInfo status={status} mailbox={mailbox} lastSync={lastSync} onShare={() => setSheet('share')} />
@@ -317,8 +370,14 @@ export function ListApp({ slug, prefill }: { slug: string; prefill?: string }) {
             setSheet(null)
             say('List cleared', true)
           }}
-          onMove={moveAway}
+          onMove={password?.locked ? undefined : moveAway}
           moving={moving}
+          password={retired ? undefined : password}
+          onPasswordDone={(text) => {
+            setSheet(null)
+            if (onNotice) onNotice(text)
+            else say(text)
+          }}
           moved={moved}
           onRemoveLocal={async () => {
             await removeLocal()

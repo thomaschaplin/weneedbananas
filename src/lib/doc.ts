@@ -272,21 +272,92 @@ export function isMoved(ld: ListDoc): boolean {
 }
 
 /**
- * Move a list to new words: returns its whole state (items, usuals, aisle order) as a Yjs update to seed the
- * new list, then empties this one and marks it moved. The new words are never written here, or anyone who
- * still has the old words would learn them. Not undoable: undo would put the items back under the old words.
+ * Empty a list, keeping only the markers in `mark`, and return its whole state from just before (items, usuals,
+ * aisle order) as a Yjs update to seed wherever it is going. Not undoable: undo would put the items back.
  */
-export function moveOut(ld: ListDoc): Uint8Array {
+function emptyOut(ld: ListDoc, mark: Record<string, unknown>, keepOrder: boolean): Uint8Array {
   const state = Y.encodeStateAsUpdate(ld.doc)
   ld.doc.transact(() => {
     ld.items.forEach((_, id) => ld.items.delete(id))
     ld.history.forEach((_, key) => ld.history.delete(key))
     ld.aisleFor.forEach((_, key) => ld.aisleFor.delete(key))
-    ld.meta.set('moved', true)
-    ld.meta.set('movedAt', Date.now())
+    if (!keepOrder) ld.meta.delete('aisleOrder')
+    for (const [k, v] of Object.entries(mark)) ld.meta.set(k, v)
   })
   ld.undo.clear()
   return state
+}
+
+/**
+ * Move a list to new words: returns its whole state (items, usuals, aisle order) as a Yjs update to seed the
+ * new list, then empties this one and marks it moved. The new words are never written here, or anyone who
+ * still has the old words would learn them. Not undoable: undo would put the items back under the old words.
+ */
+export function moveOut(ld: ListDoc): Uint8Array {
+  return emptyOut(ld, { moved: true, movedAt: Date.now() }, true)
+}
+
+/** Where a password-protected list lives, as recorded in the list under its words alone. */
+export interface LockInfo {
+  /** Hex salt mixed into the password list's keys. */
+  salt: string
+  /** The password list's mailbox public key, which the relays see anyway: lets a device check a password. */
+  key: string
+}
+
+/** The list under these words has a password; the items live under the words and the password together. */
+export function lockInfo(ld: ListDoc): LockInfo | null {
+  const salt = ld.meta.get('lockSalt')
+  const key = ld.meta.get('lockKey')
+  return typeof salt === 'string' && typeof key === 'string' ? { salt, key } : null
+}
+
+/** Point the list under the words alone at a (new) password list. */
+export function setLockInfo(ld: ListDoc, info: LockInfo): void {
+  ld.doc.transact(() => {
+    ld.meta.set('lockSalt', info.salt)
+    ld.meta.set('lockKey', info.key)
+  })
+}
+
+/**
+ * Give a list a password: returns its whole state to seed the password list, then empties it (aisle order too)
+ * and leaves only where the password list is, which says nothing without the password.
+ */
+export function lockOut(ld: ListDoc, info: LockInfo): Uint8Array {
+  return emptyOut(ld, { lockSalt: info.salt, lockKey: info.key }, false)
+}
+
+/** This password list has been left behind because its password was changed or removed. */
+export function isRetired(ld: ListDoc): boolean {
+  return ld.meta.get('retired') === true
+}
+
+/** Empty a password list whose password is being changed or removed, returning its state from just before. */
+export function retire(ld: ListDoc): Uint8Array {
+  return emptyOut(ld, { retired: true }, false)
+}
+
+/**
+ * Remove the password: copy a password list's contents back under the words alone. Copied as values, not as
+ * Yjs history, because the list under the words alone already holds the deletions from when it was locked,
+ * and those would win over the same items coming back.
+ */
+export function unlockInto(from: ListDoc, to: ListDoc): void {
+  to.doc.transact(() => {
+    from.items.forEach((m, id) => {
+      const copy = new Y.Map<unknown>()
+      m.forEach((v, k) => copy.set(k, v))
+      to.items.set(id, copy)
+    })
+    from.history.forEach((h, key) => to.history.set(key, h))
+    from.aisleFor.forEach((a, key) => to.aisleFor.set(key, a))
+    const order = from.meta.get('aisleOrder')
+    if (order) to.meta.set('aisleOrder', order)
+    to.meta.delete('lockSalt')
+    to.meta.delete('lockKey')
+  })
+  to.undo.clear()
 }
 
 export interface AisleGroup {

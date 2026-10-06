@@ -59,6 +59,12 @@ export function Privacy() {
           the words have gone further than you'd like, open the list's settings and choose "Move to new words": your
           items move to a new list, and the old words only show that the list has moved, never where to.
         </p>
+        <p>
+          For more protection, give the list a password in its settings. The list is then encrypted with keys made from
+          the words <em>and</em> the password, so the words alone open nothing, and guessing the list from what the
+          relays see means guessing the password too. The password is never sent anywhere or put in the link; each
+          device remembers it after it's typed once. Changing it locks out anyone with only the old one.
+        </p>
 
         <h2>Deleting</h2>
         <p>
