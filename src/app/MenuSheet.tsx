@@ -1,6 +1,8 @@
 import { useState } from 'preact/hooks'
 import { AISLE_BY_ID } from '../lib/aisles'
+import type { PasswordControls } from './ListApp'
 import { NameForm } from './NameForm'
+import { PasswordSection } from './Password'
 
 export function MenuContent({
   name,
@@ -12,6 +14,8 @@ export function MenuContent({
   onMove,
   moving = false,
   moved = false,
+  password,
+  onPasswordDone,
   itemCount,
 }: {
   name: string
@@ -25,6 +29,9 @@ export function MenuContent({
   moving?: boolean
   /** This list has already been moved away. */
   moved?: boolean
+  /** Add, change or remove the list's password. */
+  password?: PasswordControls
+  onPasswordDone?: (message: string) => void
   itemCount: number
 }) {
   const [confirmRemove, setConfirmRemove] = useState(false)
@@ -85,12 +92,17 @@ export function MenuContent({
         </ol>
       </section>
 
+      {password && !moved && <PasswordSection controls={password} onDone={(m) => onPasswordDone?.(m)} />}
+
       <section>
         <h3>List</h3>
         <div class="stack">
           <button type="button" class="btn" disabled={itemCount === 0} onClick={onClearAll}>
             Clear every item
           </button>
+          {password?.locked && !moved && (
+            <p class="muted small">To shut people out of a list with a password, change the password.</p>
+          )}
           {onMove &&
             !moved &&
             (confirmMove ? (

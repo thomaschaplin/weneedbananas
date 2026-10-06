@@ -417,3 +417,103 @@ test('moving a list to new words leaves the old words with only a notice', async
   await expect(pc.locator('.item')).toHaveCount(0)
   await c.close()
 })
+
+test('a password keeps the list from anyone with only the words', async ({ browser }) => {
+  const relay = new MockRelay()
+  const slug = 'plum.kettle.harp'
+  const a = await browser.newContext()
+  const b = await browser.newContext()
+  await relay.attach(a)
+  await relay.attach(b)
+  const pa = await a.newPage()
+  const pb = await b.newPage()
+
+  await pa.goto(`/${slug}`)
+  await add(pa, 'eggs, bread, bananas')
+  await pb.goto(`/${slug}`)
+  await expect(pb.locator('.item')).toHaveCount(3, { timeout: 30_000 })
+
+  // Add a password.
+  await pa.getByRole('button', { name: 'List settings' }).click()
+  const settings = pa.getByRole('dialog', { name: 'List settings' })
+  await settings.getByRole('button', { name: 'Add a password' }).click()
+  await settings.getByLabel('New password').fill('short')
+  await settings.getByLabel('Type it again').fill('short')
+  await settings.getByRole('button', { name: 'Add password' }).click()
+  await expect(settings.getByRole('alert')).toContainText('at least 8')
+  await settings.getByLabel('New password').fill('pickled onions')
+  await settings.getByLabel('Type it again').fill('pickled onions')
+  await settings.getByRole('button', { name: 'Add password' }).click()
+  await expect(pa.getByText('Password added')).toBeVisible({ timeout: 15_000 })
+  // The device that set it keeps the list, and remembers the password.
+  await expect(pa.locator('.item')).toHaveCount(3)
+  await pa.reload()
+  await expect(pa.locator('.item')).toHaveCount(3, { timeout: 15_000 })
+  await pa.getByRole('button', { name: /Share list/ }).click()
+  await expect(pa.getByRole('dialog', { name: 'Share this list' })).toContainText('also needs its password')
+  await pa.keyboard.press('Escape')
+
+  // The other device, on the words alone, is asked for it.
+  await expect(pb.getByText('This list has a password')).toBeVisible({ timeout: 15_000 })
+  await expect(pb.locator('.item')).toHaveCount(0)
+  await pb.getByLabel('Password').fill('pickled onion')
+  await pb.getByRole('button', { name: 'Open list' }).click()
+  await expect(pb.getByText("That password doesn't open this list.")).toBeVisible({ timeout: 15_000 })
+  await pb.getByLabel('Password').fill('pickled onions')
+  await pb.getByRole('button', { name: 'Open list' }).click()
+  await expect(pb.locator('.item')).toHaveCount(3, { timeout: 15_000 })
+
+  // Change it: the other device must ask again.
+  await pa.getByRole('button', { name: 'List settings' }).click()
+  await settings.getByRole('button', { name: 'Change password' }).click()
+  await settings.getByLabel('New password').fill('mushy peas forever')
+  await settings.getByLabel('Type it again').fill('mushy peas forever')
+  await settings.getByRole('button', { name: 'Change password' }).click()
+  await expect(pa.getByText('Password changed')).toBeVisible({ timeout: 15_000 })
+  await expect(pa.locator('.item')).toHaveCount(3)
+  await expect(pb.getByText('The password has changed since this device last opened the list')).toBeVisible({
+    timeout: 15_000,
+  })
+  await expect(pb.locator('.item')).toHaveCount(0)
+  await a.close()
+  await b.close()
+
+  // A new device later gets nothing without the password, and everything with it.
+  const c = await browser.newContext()
+  await relay.attach(c)
+  const pc = await c.newPage()
+  await pc.goto(`/${slug}`)
+  await expect(pc.getByText('This list has a password')).toBeVisible({ timeout: 15_000 })
+  await pc.getByLabel('Password').fill('mushy peas forever')
+  await pc.getByRole('button', { name: 'Open list' }).click()
+  await expect(pc.locator('.item')).toHaveCount(3, { timeout: 15_000 })
+
+  // Lock it on this device: the password and the copy here are forgotten, even across a reload.
+  await pc.getByRole('button', { name: 'Lock this list on this device' }).click()
+  await expect(pc.getByText('This list is locked')).toBeVisible({ timeout: 15_000 })
+  await expect(pc.locator('.item')).toHaveCount(0)
+  await pc.reload()
+  await expect(pc.getByText('This list has a password')).toBeVisible({ timeout: 15_000 })
+  expect(await pc.evaluate(() => localStorage.getItem('wnb:pw:plum.kettle.harp'))).toBeNull()
+  // Unlocking brings the list back from the relays.
+  await pc.getByLabel('Password').fill('mushy peas forever')
+  await pc.getByRole('button', { name: 'Open list' }).click()
+  await expect(pc.locator('.item')).toHaveCount(3, { timeout: 15_000 })
+
+  // Remove it: the words alone open the list again.
+  await pc.getByRole('button', { name: 'List settings' }).click()
+  const cs = pc.getByRole('dialog', { name: 'List settings' })
+  await cs.getByRole('button', { name: 'Remove password' }).click()
+  await cs.getByRole('button', { name: 'Remove password' }).click()
+  await expect(pc.getByText('Password removed')).toBeVisible({ timeout: 15_000 })
+  await expect(pc.locator('.item')).toHaveCount(3)
+  await c.close()
+
+  const d = await browser.newContext()
+  await relay.attach(d)
+  const pd = await d.newPage()
+  await pd.goto(`/${slug}`)
+  await expect(pd.locator('.item')).toHaveCount(3, { timeout: 15_000 })
+  await expect(pd.getByText('This list has a password')).toHaveCount(0)
+  await d.close()
+})

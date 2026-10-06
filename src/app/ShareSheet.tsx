@@ -3,7 +3,18 @@ import { useMemo, useState } from 'preact/hooks'
 import type { Item } from '../lib/doc'
 import { listAsText } from '../lib/export'
 
-export function ShareContent({ slug, items, order }: { slug: string; items?: Item[]; order?: string[] }) {
+export function ShareContent({
+  slug,
+  items,
+  order,
+  locked = false,
+}: {
+  slug: string
+  items?: Item[]
+  order?: string[]
+  /** The list has a password, which is never part of the link. */
+  locked?: boolean
+}) {
   const url = `https://weneedbananas.com/${slug}`
   const [copied, setCopied] = useState(false)
   const [copiedText, setCopiedText] = useState(false)
@@ -69,10 +80,17 @@ export function ShareContent({ slug, items, order }: { slug: string; items?: Ite
         </button>
       </div>
       <div class="qr" dangerouslySetInnerHTML={{ __html: qrSvg }} aria-label="QR code for this list" role="img" />
-      <p class="muted small">
-        Anyone with these three words can see and edit this list, so share them only with the people you shop with. Say
-        them out loud, scan the code, or type them on the home page.
-      </p>
+      {locked ? (
+        <p class="muted small">
+          🔒 This list also needs its password, which isn't in the link or the code. Tell people the password
+          separately, ideally not in the same message as the words.
+        </p>
+      ) : (
+        <p class="muted small">
+          Anyone with these three words can see and edit this list, so share them only with the people you shop with.
+          Say them out loud, scan the code, or type them on the home page.
+        </p>
+      )}
       {items && items.some((i) => !i.done) && (
         <div class="share-text">
           <p class="muted small">Or send what's left to get as a plain message, with the list link at the bottom.</p>
