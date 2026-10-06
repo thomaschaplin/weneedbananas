@@ -1569,6 +1569,13 @@ h1 {
   font-weight: 750;
 }
 
+/* Pinned to the top, clear of the add bar and the undo toast. */
+.update-toast {
+  top: calc(12px + env(safe-area-inset-top));
+  bottom: auto;
+  z-index: 30;
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;

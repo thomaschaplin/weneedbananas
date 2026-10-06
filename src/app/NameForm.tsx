@@ -50,6 +50,7 @@ export function NameForm({
           ref={input}
           type="text"
           value={draft}
+          data-saved={dirty ? undefined : ''}
           maxLength={MAX_NAME}
           placeholder="e.g. Sam"
           autoComplete="given-name"
