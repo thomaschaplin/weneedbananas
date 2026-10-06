@@ -71,6 +71,11 @@ export default defineConfig({
         share_target: { action: '/share-target', method: 'GET', params: { title: 'title', text: 'text', url: 'url' } },
       },
       workbox: {
+        // registerType 'autoUpdate' only turns these on when the plugin injects the register script.
+        // We register it ourselves (injectRegister: false), so without them a new worker sits in
+        // "waiting" until every tab and the installed app are closed, and deploys take days to land.
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
         globIgnores: ['og.png'],
         // Any /word.word.word opens the (cached) app shell, so lists work offline.
