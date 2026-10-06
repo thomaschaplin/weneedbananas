@@ -301,7 +301,7 @@ export function PasswordPrompt({
     setPasskeyError('')
     try {
       if (await onPasskey()) return
-      setPasskeyError("That passkey doesn't open this list any more. Type the password instead.")
+      setPasskeyError(`That passkey doesn't open this list. Pick the one named ${slug}, or type the password.`)
     } catch (e) {
       setPasskeyError(passkeyErrorText(e))
     }

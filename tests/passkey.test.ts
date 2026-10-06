@@ -82,12 +82,14 @@ describe('passkey prompts', () => {
   // Browsers only show a passkey prompt straight from a tap; Safari refuses one asked for after an await, which
   // let a passkey unlock a list once and then silently do nothing.
   it('are asked for without awaiting anything first', async () => {
-    const get = vi.fn(() => new Promise<never>(() => {}))
+    const get = vi.fn((_: CredentialRequestOptions) => new Promise<never>(() => {}))
     const create = vi.fn(() => new Promise<never>(() => {}))
     vi.stubGlobal('navigator', { credentials: { get, create } })
 
     void unlockWithPasskey(SLUG, { salt: 'ab', key: 'cd' }, new Map([['AQID', { salt: 'ab', iv: '', ct: '' }]]))
     expect(get).toHaveBeenCalledTimes(1)
+    // Everyone's passkeys are in the list; naming them makes password managers balk at the ones they don't hold.
+    expect(get.mock.calls[0]).toMatchObject([{ publicKey: { allowCredentials: [] } }])
     void createPasskey(SLUG, { password: 'banana split 99', salt: 'ab' })
     expect(create).toHaveBeenCalledTimes(1)
   })
