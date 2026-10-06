@@ -17,7 +17,8 @@ export function ShareTarget({ text }: { text: string }) {
   const count = useMemo(() => parseMany(text).length, [text])
 
   return (
-    <main class="share-target">
+    // The shared text lives only in memory, so a reload would lose it.
+    <main class="share-target" data-unsaved={count ? '' : undefined}>
       <a href="/" class="home" aria-label="We Need Bananas home">
         <BananaMark size={34} />
       </a>

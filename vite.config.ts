@@ -49,7 +49,8 @@ export default defineConfig({
       },
     },
     VitePWA({
-      registerType: 'autoUpdate',
+      // New versions wait for src/sw.ts to switch over when the page holds no unsaved input.
+      registerType: 'prompt',
       integration: { closeBundleOrder: 'post' },
       injectRegister: false,
       manifest: {
