@@ -47,6 +47,16 @@ export interface PasswordControls {
   remove: () => Promise<void>
   /** Lock the list on this device: forget the password and the copy here until it's typed again. */
   lockDevice?: () => Promise<void>
+  /** Unlocking with passkeys instead of the password, where this browser can. */
+  passkeys?: PasskeyControls
+}
+
+export interface PasskeyControls {
+  /** How many passkeys can unlock the list now. */
+  count: number
+  /** Make a passkey on this device and seal the password with it. */
+  add: () => Promise<void>
+  removeAll: () => Promise<void>
 }
 
 export function ListApp({

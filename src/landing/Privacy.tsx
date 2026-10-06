@@ -65,6 +65,11 @@ export function Privacy() {
           relays see means guessing the password too. The password is never sent anywhere or put in the link; each
           device remembers it after it's typed once. Changing it locks out anyone with only the old one.
         </p>
+        <p>
+          On a list with a password you can add a passkey, so your own devices open it without typing the password. The
+          passkey makes a secret that never leaves your device, and that secret encrypts a copy of the password kept in
+          the list. Only your passkey can decrypt it. Changing the password removes every passkey from the list.
+        </p>
 
         <h2>Deleting</h2>
         <p>

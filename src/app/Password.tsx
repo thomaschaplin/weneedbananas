@@ -1,8 +1,94 @@
 import { useState } from 'preact/hooks'
 import { MIN_PASSWORD } from '../lib/lock'
+import { cancelled, NoPrfError } from '../lib/passkey'
 import { BananaMark } from '../landing/Logo'
 import { ThemeToggle } from '../landing/ThemeToggle'
-import type { PasswordControls } from './ListApp'
+import type { PasskeyControls, PasswordControls } from './ListApp'
+
+const passkeyErrorText = (e: unknown) => passkeyError(e, "Couldn't use a passkey. Type the password instead.")
+
+/** What to say when a passkey couldn't be used; nothing if the prompt was just closed. */
+function passkeyError(e: unknown, fallback: string): string {
+  if (cancelled(e)) return ''
+  if (e instanceof NoPrfError) return "This device's passkeys can't unlock lists yet."
+  return fallback
+}
+
+/** Adding passkeys to a list with a password, so it opens without typing the password. */
+function PasskeySection({ controls, onDone }: { controls: PasskeyControls; onDone: (message: string) => void }) {
+  const [busy, setBusy] = useState(false)
+  const [confirm, setConfirm] = useState(false)
+  const [error, setError] = useState('')
+  const n = controls.count
+
+  const act = async (work: () => Promise<void>, done: string, failed: string) => {
+    setBusy(true)
+    setError('')
+    try {
+      await work()
+      onDone(done)
+    } catch (e) {
+      setError(passkeyError(e, failed))
+    }
+    setBusy(false)
+    setConfirm(false)
+  }
+
+  return (
+    <div class="stack passkeys">
+      <p class="muted small">
+        Add a passkey to open this list on your own devices without typing the password: it works wherever the passkey
+        syncs, like iCloud Keychain or Google Password Manager. Each person adds their own.
+        {n > 0 && ` ${n === 1 ? 'One passkey has' : `${n} passkeys have`} been added.`}
+      </p>
+      {confirm ? (
+        <div class="confirm">
+          <p>Remove every passkey from this list? Everyone who used one types the password again on a new device.</p>
+          <div class="row">
+            <button
+              type="button"
+              class="btn btn-danger"
+              disabled={busy}
+              onClick={() => act(controls.removeAll, 'Passkeys removed.', "Couldn't remove the passkeys. Try again.")}
+            >
+              {busy ? 'Removing…' : 'Remove passkeys'}
+            </button>
+            <button type="button" class="btn" disabled={busy} onClick={() => setConfirm(false)}>
+              Keep them
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <button
+            type="button"
+            class="btn"
+            disabled={busy}
+            onClick={() =>
+              act(
+                controls.add,
+                'Passkey added. Use it to unlock this list on any device it syncs to.',
+                "Couldn't add a passkey. Try again.",
+              )
+            }
+          >
+            {busy ? 'Adding…' : 'Add a passkey'}
+          </button>
+          {n > 0 && (
+            <button type="button" class="btn" disabled={busy} onClick={() => setConfirm(true)}>
+              Remove passkeys
+            </button>
+          )}
+        </>
+      )}
+      {error && (
+        <p class="password-error small" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
 
 /** New password, typed twice. */
 function NewPasswordForm({
@@ -109,17 +195,19 @@ export function PasswordSection({
           once on each device. Share it separately from the words, and pick one that's hard to guess.
         </p>
       )}
+      {mode === null && controls.passkeys && <PasskeySection controls={controls.passkeys} onDone={onDone} />}
       {mode === 'set' ? (
         <NewPasswordForm
           submitLabel={controls.locked ? 'Change password' : 'Add password'}
           onCancel={() => setMode(null)}
           onSubmit={async (pw) => {
             const changing = controls.locked
+            const hadPasskeys = (controls.passkeys?.count ?? 0) > 0
             await controls.set(pw)
             setMode(null)
             onDone(
               changing
-                ? 'Password changed. Everyone else on the list needs the new one.'
+                ? `Password changed. Everyone else on the list needs the new one${hadPasskeys ? ', and passkeys need adding again' : ''}.`
                 : 'Password added. Share it with everyone on the list.',
             )
           }}
@@ -191,15 +279,33 @@ export function PasswordPrompt({
   slug,
   reason,
   onSubmit,
+  onPasskey,
 }: {
   slug: string
   reason: PromptReason
   /** Resolves true if the password opened the list. */
   onSubmit: (password: string) => Promise<boolean>
+  /** Resolves true if a passkey opened the list. Only when passkeys have been added to it. */
+  onPasskey?: () => Promise<boolean>
 }) {
   const [pw, setPw] = useState('')
   const [checking, setChecking] = useState(false)
   const [wrong, setWrong] = useState(false)
+  const [passkeyError, setPasskeyError] = useState('')
+
+  const usePasskey = async () => {
+    if (!onPasskey || checking) return
+    setChecking(true)
+    setWrong(false)
+    setPasskeyError('')
+    try {
+      if (await onPasskey()) return
+      setPasskeyError("That passkey doesn't open this list any more. Type the password instead.")
+    } catch (e) {
+      setPasskeyError(passkeyErrorText(e))
+    }
+    setChecking(false)
+  }
 
   const submit = async (e: Event) => {
     e.preventDefault()
@@ -246,6 +352,16 @@ export function PasswordPrompt({
             <button type="submit" class="btn btn-primary" disabled={checking}>
               {checking ? 'Checking…' : reason === 'locked' ? 'Unlock' : 'Open list'}
             </button>
+            {onPasskey && (
+              <button type="button" class="btn" disabled={checking} onClick={usePasskey}>
+                Unlock with a passkey
+              </button>
+            )}
+            {passkeyError && (
+              <p class="password-error small" role="alert">
+                {passkeyError}
+              </p>
+            )}
           </div>
         </form>
       </main>
