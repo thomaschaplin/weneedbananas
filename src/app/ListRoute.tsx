@@ -15,13 +15,14 @@ import {
 import { storeName } from '../lib/move'
 import { ListApp, type PasswordControls } from './ListApp'
 import type { ToastData } from './Toast'
-import { PasswordPrompt } from './Password'
+import { PasswordPrompt, type PromptReason } from './Password'
 import { useList, type ListHandle } from './useList'
 
 type View =
   | { kind: 'open' }
   | { kind: 'checking' }
-  | { kind: 'prompt'; changed: boolean }
+  /** Why the password is being asked for: a new device, a changed password, or locked here on purpose. */
+  | { kind: 'prompt'; reason: PromptReason }
   | { kind: 'locked'; lock: Lock; key: string }
 
 /**
@@ -50,12 +51,12 @@ export function ListRoute({ slug, prefill }: { slug: string; prefill?: string })
     }
     if (view.kind === 'locked' && view.lock.salt === info.salt && view.key === info.key) return
     const saved = savedPassword(slug)
-    if (!saved) return setView({ kind: 'prompt', changed: false })
+    if (!saved) return setView({ kind: 'prompt', reason: view.kind === 'prompt' ? view.reason : 'new' })
     let live = true
     setView({ kind: 'checking' })
     void tryPassword(slug, info, saved).then((lock) => {
       if (!live) return
-      setView(lock ? { kind: 'locked', lock, key: info.key } : { kind: 'prompt', changed: true })
+      setView(lock ? { kind: 'locked', lock, key: info.key } : { kind: 'prompt', reason: 'changed' })
     })
     return () => {
       live = false
@@ -89,7 +90,7 @@ export function ListRoute({ slug, prefill }: { slug: string; prefill?: string })
     return true
   }
 
-  if (view.kind === 'prompt' && info) return <PasswordPrompt slug={slug} changed={view.changed} onSubmit={unlock} />
+  if (view.kind === 'prompt' && info) return <PasswordPrompt slug={slug} reason={view.reason} onSubmit={unlock} />
   if (view.kind === 'checking') return null
   if (view.kind === 'locked' && info) {
     return (
@@ -104,8 +105,9 @@ export function ListRoute({ slug, prefill }: { slug: string; prefill?: string })
         {...notices}
         onReenter={() => {
           forgetPassword(slug)
-          setView({ kind: 'prompt', changed: true })
+          setView({ kind: 'prompt', reason: 'changed' })
         }}
+        onLocked={() => setView({ kind: 'prompt', reason: 'locked' })}
       />
     )
   }
@@ -136,6 +138,7 @@ function LockedList({
   working,
   run,
   onReenter,
+  onLocked,
   notice,
   onNotice,
 }: {
@@ -146,6 +149,7 @@ function LockedList({
   working?: string
   run: (label: string, work: () => Promise<void>) => Promise<void>
   onReenter: () => void
+  onLocked: () => void
   notice: ToastData | null
   onNotice: (text: string) => void
 }) {
@@ -173,6 +177,13 @@ function LockedList({
         const [sent] = await Promise.all([locked.flush(), open.flush()])
         dropOld(sent)
       }),
+    // Only once a relay holds everything this device has: the copy here is about to go.
+    lockDevice: async () => {
+      if (!(await locked.flush())) throw new Error('not saved')
+      forgetPassword(slug)
+      await locked.removeLocal(true)
+      onLocked()
+    },
   }
 
   const list: ListHandle = {

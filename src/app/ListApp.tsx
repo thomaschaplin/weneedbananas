@@ -45,6 +45,8 @@ export interface PasswordControls {
   /** Add a password, or change it. */
   set: (password: string) => Promise<void>
   remove: () => Promise<void>
+  /** Lock the list on this device: forget the password and the copy here until it's typed again. */
+  lockDevice?: () => Promise<void>
 }
 
 export function ListApp({
@@ -128,6 +130,14 @@ export function ListApp({
     } catch {
       setMoving(false)
       say("Couldn't move the list. Try again.")
+    }
+  }
+
+  const lockHere = async () => {
+    try {
+      await password?.lockDevice?.()
+    } catch {
+      say("Couldn't save your latest changes, so the list is still unlocked. Try again when you're online.")
     }
   }
 
@@ -222,6 +232,17 @@ export function ListApp({
             <path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
           </svg>
         </button>
+        {password?.lockDevice && !moving && !retired && (
+          <button
+            type="button"
+            class="icon-btn"
+            aria-label="Lock this list on this device"
+            title="Lock on this device"
+            onClick={() => void lockHere()}
+          >
+            🔒
+          </button>
+        )}
         <ThemeToggle />
         <button type="button" class="icon-btn" aria-label="List settings" onClick={() => setSheet('menu')}>
           ⋯

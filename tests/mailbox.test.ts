@@ -242,6 +242,21 @@ describe('mailbox', () => {
     await until(() => allItems(b.ld).length === 1)
   })
 
+  it('flushNow is done at once when a relay already holds everything this device has', async () => {
+    const a = device()
+    await a.mb.start(false)
+    addItems(a.ld, parseMany('eggs'))
+    expect(await a.mb.flushNow()).toBe(true)
+    const sent = [...relay.stored.values()][0].id
+
+    const b = device()
+    await b.mb.start(false)
+    await until(() => allItems(b.ld).length === 1 && b.state() === 'saved')
+    expect(await b.mb.flushNow(1000)).toBe(true)
+    // Nothing new was published.
+    expect([...relay.stored.values()][0].id).toBe(sent)
+  })
+
   it('flushNow gives up when no relay will take the changes', async () => {
     relay.reject = true
     const a = device()

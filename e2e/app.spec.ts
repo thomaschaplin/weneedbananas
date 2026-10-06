@@ -488,6 +488,18 @@ test('a password keeps the list from anyone with only the words', async ({ brows
   await pc.getByRole('button', { name: 'Open list' }).click()
   await expect(pc.locator('.item')).toHaveCount(3, { timeout: 15_000 })
 
+  // Lock it on this device: the password and the copy here are forgotten, even across a reload.
+  await pc.getByRole('button', { name: 'Lock this list on this device' }).click()
+  await expect(pc.getByText('This list is locked')).toBeVisible({ timeout: 15_000 })
+  await expect(pc.locator('.item')).toHaveCount(0)
+  await pc.reload()
+  await expect(pc.getByText('This list has a password')).toBeVisible({ timeout: 15_000 })
+  expect(await pc.evaluate(() => localStorage.getItem('wnb:pw:plum.kettle.harp'))).toBeNull()
+  // Unlocking brings the list back from the relays.
+  await pc.getByLabel('Password').fill('mushy peas forever')
+  await pc.getByRole('button', { name: 'Open list' }).click()
+  await expect(pc.locator('.item')).toHaveCount(3, { timeout: 15_000 })
+
   // Remove it: the words alone open the list again.
   await pc.getByRole('button', { name: 'List settings' }).click()
   const cs = pc.getByRole('dialog', { name: 'List settings' })

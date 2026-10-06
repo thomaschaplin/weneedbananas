@@ -100,7 +100,8 @@ export function PasswordSection({
       <h3>Password</h3>
       {controls.locked ? (
         <p class="muted small">
-          🔒 This list has a password. Each device needs the words and the password once, then remembers it.
+          🔒 This list has a password. Each device needs the words and the password once, then remembers it. To make
+          this device forget it, and its copy of the list, lock the list here; type the password to unlock it.
         </p>
       ) : (
         <p class="muted small">
@@ -140,6 +141,25 @@ export function PasswordSection({
           <button type="button" class="btn" onClick={() => setMode('set')}>
             {controls.locked ? 'Change password' : 'Add a password'}
           </button>
+          {controls.lockDevice && (
+            <button
+              type="button"
+              class="btn"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true)
+                setError('')
+                try {
+                  await controls.lockDevice?.()
+                } catch {
+                  setError("Couldn't save your latest changes, so the list is still unlocked. Try again when online.")
+                  setBusy(false)
+                }
+              }}
+            >
+              {busy ? 'Locking…' : 'Lock on this device'}
+            </button>
+          )}
           {controls.locked && (
             <button type="button" class="btn" onClick={() => setMode('remove')}>
               Remove password
@@ -156,15 +176,24 @@ export function PasswordSection({
   )
 }
 
+/** new: never opened here. changed: the password this device had stopped working. locked: locked here on purpose. */
+export type PromptReason = 'new' | 'changed' | 'locked'
+
+const PROMPT_TEXT: Record<PromptReason, string> = {
+  new: 'Ask whoever shared the list for the password. This device remembers it after the first time.',
+  changed: 'The password has changed since this device last opened the list. Ask whoever changed it for the new one.',
+  locked:
+    "Locked on this device. Nothing from the list is kept here until it's unlocked; it comes back from the other devices and relays when you type the password.",
+}
+
 /** Shown in place of a list that has a password this device doesn't know (yet). */
 export function PasswordPrompt({
   slug,
-  changed,
+  reason,
   onSubmit,
 }: {
   slug: string
-  /** This device had a password for the list and it no longer works. */
-  changed: boolean
+  reason: PromptReason
   /** Resolves true if the password opened the list. */
   onSubmit: (password: string) => Promise<boolean>
 }) {
@@ -197,12 +226,8 @@ export function PasswordPrompt({
       </header>
       <main class="list">
         <form class="empty unlock" onSubmit={submit}>
-          <p class="empty-title">🔒 This list has a password</p>
-          <p>
-            {changed
-              ? 'The password has changed since this device last opened the list. Ask whoever changed it for the new one.'
-              : 'Ask whoever shared the list for the password. This device remembers it after the first time.'}
-          </p>
+          <p class="empty-title">{reason === 'locked' ? '🔒 This list is locked' : '🔒 This list has a password'}</p>
+          <p>{PROMPT_TEXT[reason]}</p>
           <div class="stack">
             <input
               type="password"
@@ -219,7 +244,7 @@ export function PasswordPrompt({
               </p>
             )}
             <button type="submit" class="btn btn-primary" disabled={checking}>
-              {checking ? 'Checking…' : 'Open list'}
+              {checking ? 'Checking…' : reason === 'locked' ? 'Unlock' : 'Open list'}
             </button>
           </div>
         </form>

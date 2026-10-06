@@ -81,11 +81,12 @@ export function useList(slug: string, lock?: Lock, announce = true) {
     }
   }, [syncedAt, slug])
 
-  /** Wipe this list from this device only. */
-  const removeLocal = async () => {
+  /** Wipe this list from this device only. With `keepPrefs`, plan/shop mode and last sync time stay. */
+  const removeLocal = async (keepPrefs = false) => {
     provider.current?.destroy()
     box.current?.destroy()
     await persistence.current?.clearData()
+    if (keepPrefs) return
     try {
       localStorage.removeItem(lastSyncKey(slug))
       localStorage.removeItem(`wnb:mode:${slug}`)
