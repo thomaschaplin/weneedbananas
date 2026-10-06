@@ -1,0 +1,98 @@
+name: Apps
+
+# Builds the iOS and Android apps (see "iOS and Android apps" in the README). Unsigned for now:
+# the iOS build is for the Simulator and the Android one is a debug APK, both uploaded as artifacts.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    # macOS runner minutes cost 10x on a private repo, so only build when something the apps
+    # contain could have changed.
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - '*.html'
+      - 'ios/**'
+      - 'android/**'
+      - 'assets/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'capacitor.config.ts'
+      - 'vite.config.ts'
+      - 'scripts/prerender.tsx'
+      - '.github/workflows/apps.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    name: iOS (Simulator build)
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - run: npm ci
+      - run: npm run build:native
+      - name: Cache Swift packages
+        uses: actions/cache@v4
+        with:
+          path: ios/build/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('ios/App/CapApp-SPM/Package.swift', 'package-lock.json') }}
+      - name: Build
+        run: >
+          xcodebuild build -quiet
+          -project ios/App/App.xcodeproj
+          -scheme App
+          -configuration Debug
+          -sdk iphonesimulator
+          -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath ios/build
+          CODE_SIGNING_ALLOWED=NO
+      - name: Zip app
+        run: cd ios/build/Build/Products/Debug-iphonesimulator && zip -qry "$GITHUB_WORKSPACE/WeNeedBananas-simulator.zip" App.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: WeNeedBananas-simulator.zip
+          if-no-files-found: error
+          retention-days: 14
+
+  android:
+    name: Android (debug APK)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci
+      - run: npm run build:native
+      - name: Build
+        working-directory: android
+        run: ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14

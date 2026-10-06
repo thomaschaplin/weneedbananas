@@ -50,6 +50,8 @@ npm run android    # build, sync and open Android Studio
 npm run images     # also regenerates the app icons and splash screens from assets/
 ```
 
+CI (`.github/workflows/apps.yml`) builds both apps on pull requests that touch them and on `main`: an unsigned iOS Simulator build on a macOS runner and a debug APK, uploaded as the `ios-simulator-app` and `android-debug-apk` artifacts. It can also be run by hand from the Actions tab.
+
 Before the first store release:
 
 1. Replace `TEAMID` in `public/.well-known/apple-app-site-association` with your Apple Developer Team ID, and pick that team under Signing & Capabilities in Xcode.
