@@ -517,3 +517,71 @@ test('a password keeps the list from anyone with only the words', async ({ brows
   await expect(pd.getByText('This list has a password')).toHaveCount(0)
   await d.close()
 })
+
+test('a passkey unlocks a list with a password without typing it', async ({ browser }) => {
+  const relay = new MockRelay()
+  const slug = 'fig.ladder.moss'
+  const a = await browser.newContext()
+  await relay.attach(a)
+  const pa = await a.newPage()
+  // A platform authenticator with PRF, like Face ID or Windows Hello with a synced passkey.
+  const cdp = await a.newCDPSession(pa)
+  await cdp.send('WebAuthn.enable')
+  await cdp.send('WebAuthn.addVirtualAuthenticator', {
+    options: {
+      protocol: 'ctap2',
+      transport: 'internal',
+      hasResidentKey: true,
+      hasUserVerification: true,
+      isUserVerified: true,
+      hasPrf: true,
+      automaticPresenceSimulation: true,
+    },
+  })
+
+  await pa.goto(`/${slug}`)
+  await add(pa, 'eggs, bread, bananas')
+  await pa.getByRole('button', { name: 'List settings' }).click()
+  const settings = pa.getByRole('dialog', { name: 'List settings' })
+  // No passkeys until the list has a password.
+  await expect(settings.getByRole('button', { name: 'Add a passkey' })).toHaveCount(0)
+  await settings.getByRole('button', { name: 'Add a password' }).click()
+  await settings.getByLabel('New password').fill('pickled onions')
+  await settings.getByLabel('Type it again').fill('pickled onions')
+  await settings.getByRole('button', { name: 'Add password' }).click()
+  await expect(pa.getByText('Password added')).toBeVisible({ timeout: 15_000 })
+
+  await pa.getByRole('button', { name: 'List settings' }).click()
+  await settings.getByRole('button', { name: 'Add a passkey' }).click()
+  await expect(pa.getByText('Passkey added')).toBeVisible({ timeout: 15_000 })
+
+  // Lock it here, then open it again with the passkey alone.
+  await pa.getByRole('button', { name: 'Lock this list on this device' }).click()
+  await expect(pa.getByText('This list is locked')).toBeVisible({ timeout: 15_000 })
+  await pa.reload()
+  await expect(pa.getByText('This list has a password')).toBeVisible({ timeout: 15_000 })
+  await pa.getByRole('button', { name: 'Unlock with a passkey' }).click()
+  await expect(pa.locator('.item')).toHaveCount(3, { timeout: 15_000 })
+
+  // A device that has the words but none of the passkeys gets nothing from the sealed password.
+  const b = await browser.newContext()
+  await relay.attach(b)
+  const pb = await b.newPage()
+  await pb.goto(`/${slug}`)
+  await expect(pb.getByText('This list has a password')).toBeVisible({ timeout: 15_000 })
+  await expect(pb.locator('.item')).toHaveCount(0)
+  await b.close()
+
+  // Changing the password drops the passkeys: they hold the old one.
+  await pa.getByRole('button', { name: 'List settings' }).click()
+  await expect(settings).toContainText('One passkey has been added')
+  await settings.getByRole('button', { name: 'Change password' }).click()
+  await settings.getByLabel('New password').fill('mushy peas forever')
+  await settings.getByLabel('Type it again').fill('mushy peas forever')
+  await settings.getByRole('button', { name: 'Change password' }).click()
+  await expect(pa.getByText('passkeys need adding again')).toBeVisible({ timeout: 15_000 })
+  await pa.getByRole('button', { name: 'Lock this list on this device' }).click()
+  await expect(pa.getByText('This list is locked')).toBeVisible({ timeout: 15_000 })
+  await expect(pa.getByRole('button', { name: 'Unlock with a passkey' })).toHaveCount(0)
+  await a.close()
+})

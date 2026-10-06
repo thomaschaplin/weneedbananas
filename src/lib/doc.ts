@@ -312,12 +312,54 @@ export function lockInfo(ld: ListDoc): LockInfo | null {
   return typeof salt === 'string' && typeof key === 'string' ? { salt, key } : null
 }
 
-/** Point the list under the words alone at a (new) password list. */
+/**
+ * Point the list under the words alone at a (new) password list. Passkeys added for the old password are
+ * dropped: they hold the old password, which opens nothing now.
+ */
 export function setLockInfo(ld: ListDoc, info: LockInfo): void {
   ld.doc.transact(() => {
     ld.meta.set('lockSalt', info.salt)
     ld.meta.set('lockKey', info.key)
+    dropPasskeys(ld)
   })
+}
+
+/** A list's password sealed with a key only one passkey can produce, kept in the list under the words alone. */
+export interface PasskeyEntry {
+  /** The lock salt the sealed password belongs to. */
+  salt: string
+  /** Base64url AES-GCM nonce and ciphertext. */
+  iv: string
+  ct: string
+}
+
+const PASSKEY = 'passkey:'
+
+/** Passkeys that can unlock the current password list, by base64url credential id. */
+export function passkeys(ld: ListDoc): Map<string, PasskeyEntry> {
+  const info = lockInfo(ld)
+  const out = new Map<string, PasskeyEntry>()
+  if (!info) return out
+  ld.meta.forEach((v, k) => {
+    const e = v as PasskeyEntry | null
+    if (k.startsWith(PASSKEY) && e && e.salt === info.salt) out.set(k.slice(PASSKEY.length), e)
+  })
+  return out
+}
+
+export function addPasskey(ld: ListDoc, id: string, entry: PasskeyEntry): void {
+  ld.doc.transact(() => ld.meta.set(PASSKEY + id, entry))
+}
+
+function dropPasskeys(ld: ListDoc): void {
+  ld.meta.forEach((_, k) => {
+    if (k.startsWith(PASSKEY)) ld.meta.delete(k)
+  })
+}
+
+/** Forget every passkey added to the list; everyone types the password again. */
+export function removePasskeys(ld: ListDoc): void {
+  ld.doc.transact(() => dropPasskeys(ld))
 }
 
 /**
@@ -356,6 +398,7 @@ export function unlockInto(from: ListDoc, to: ListDoc): void {
     if (order) to.meta.set('aisleOrder', order)
     to.meta.delete('lockSalt')
     to.meta.delete('lockKey')
+    dropPasskeys(to)
   })
   to.undo.clear()
 }
