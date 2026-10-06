@@ -7,15 +7,25 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:native": "tsc --noEmit && vite build --mode native && cap sync",
+    "ios": "npm run build:native && cap open ios",
+    "android": "npm run build:native && cap open android",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "images": "node scripts/make-images.mjs",
+    "images": "node scripts/make-images.mjs && npx @capacitor/assets generate --ios --android --iconBackgroundColor \"#ffd23f\" --iconBackgroundColorDark \"#ffd23f\" --splashBackgroundColor \"#fffbea\" --splashBackgroundColorDark \"#17150f\"",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@capacitor-community/keep-awake": "^8.0.1",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.5.2",
+    "@capacitor/share": "^8.0.3",
     "@noble/secp256k1": "^3.2.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
@@ -26,6 +36,7 @@
     "yjs": "^13.6.33"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
     "@playwright/test": "^1.56.1",
     "@preact/preset-vite": "^2.10.6",
     "@types/node": "^26.6.3",

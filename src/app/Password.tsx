@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks'
 import { MIN_PASSWORD } from '../lib/lock'
+import { pageUrl } from '../lib/nav'
 import { BananaMark } from '../landing/Logo'
 import { ThemeToggle } from '../landing/ThemeToggle'
 import type { PasswordControls } from './ListApp'
@@ -216,7 +217,7 @@ export function PasswordPrompt({
   return (
     <div class="app">
       <header class="app-header">
-        <a href="/" class="home" aria-label="We Need Bananas home">
+        <a href={pageUrl('')} class="home" aria-label="We Need Bananas home">
           <BananaMark size={34} />
         </a>
         <span class="slug-btn">

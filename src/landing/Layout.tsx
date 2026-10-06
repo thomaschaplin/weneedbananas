@@ -1,17 +1,18 @@
 import type { ComponentChildren } from 'preact'
+import { pageUrl } from '../lib/nav'
 import { BananaMark } from './Logo'
 import { ThemeToggle } from './ThemeToggle'
 
 export function SiteHeader() {
   return (
     <header class="site-header">
-      <a href="/" class="brand" aria-label="We Need Bananas home">
+      <a href={pageUrl('')} class="brand" aria-label="We Need Bananas home">
         <BananaMark size={30} />
         <span>we need bananas</span>
       </a>
       <nav aria-label="Main">
-        <a href="/how-it-works">How it works</a>
-        <a href="/privacy">Privacy</a>
+        <a href={pageUrl('how-it-works')}>How it works</a>
+        <a href={pageUrl('privacy')}>Privacy</a>
         <ThemeToggle />
       </nav>
     </header>
@@ -26,9 +27,9 @@ export function SiteFooter() {
         list.
       </p>
       <nav aria-label="Footer">
-        <a href="/">Home</a>
-        <a href="/how-it-works">How it works</a>
-        <a href="/privacy">Privacy</a>
+        <a href={pageUrl('')}>Home</a>
+        <a href={pageUrl('how-it-works')}>How it works</a>
+        <a href={pageUrl('privacy')}>Privacy</a>
       </nav>
     </footer>
   )

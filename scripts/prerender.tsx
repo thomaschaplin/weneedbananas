@@ -12,7 +12,7 @@ import { NotFound } from '../src/landing/NotFound'
 import { Offline } from '../src/landing/Offline'
 import { Privacy } from '../src/landing/Privacy'
 
-const dist = resolve(import.meta.dirname, '../dist')
+const dist = resolve(import.meta.dirname, '..', process.env.WNB_OUT_DIR ?? 'dist')
 
 const website = {
   '@type': 'WebSite',

@@ -29,79 +29,109 @@ const rewrites: Connect.NextHandleFunction = (req, res, next) => {
   next()
 }
 
-export default defineConfig({
-  plugins: [
-    preact(),
-    {
-      name: 'wnb-rewrites',
-      configureServer: (server) => void server.middlewares.use(rewrites),
-      configurePreviewServer: (server) => void server.middlewares.use(rewrites),
-    },
-    {
-      // Prerender the static pages before the service worker is generated, so its precache
-      // revisions hash the final HTML and installed copies pick up content changes.
-      name: 'wnb-prerender',
-      apply: 'build',
-      closeBundle: {
-        order: 'pre',
-        sequential: true,
-        handler: () => void execFileSync('npx', ['tsx', 'scripts/prerender.tsx'], { stdio: 'inherit' }),
+// `vite build --mode native` builds the copy bundled into the iOS and Android apps (see capacitor.config.ts):
+// no service worker or analytics, and app-local URLs (src/lib/nav.ts).
+export default defineConfig(({ mode }) => {
+  const native = mode === 'native'
+  const outDir = native ? 'dist-native' : 'dist'
+  return {
+    plugins: [
+      preact(),
+      {
+        name: 'wnb-rewrites',
+        configureServer: (server) => void server.middlewares.use(rewrites),
+        configurePreviewServer: (server) => void server.middlewares.use(rewrites),
       },
-    },
-    VitePWA({
-      // New versions wait for src/sw.ts to switch over when the page holds no unsaved input.
-      registerType: 'prompt',
-      integration: { closeBundleOrder: 'post' },
-      injectRegister: false,
-      manifest: {
-        name: 'We Need Bananas',
-        short_name: 'Bananas',
-        description: 'Shared shopping lists with no signup. Three words, one list, everyone in sync.',
-        start_url: '/',
-        scope: '/',
-        display: 'standalone',
-        background_color: '#fffbea',
-        theme_color: '#ffd23f',
-        icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-        ],
-        // Android: share text (say, a recipe's ingredients) into the installed app. The list app
-        // shell handles /share-target and asks which list it goes on.
-        share_target: { action: '/share-target', method: 'GET', params: { title: 'title', text: 'text', url: 'url' } },
+      {
+        // Prerender the static pages before the service worker is generated, so its precache
+        // revisions hash the final HTML and installed copies pick up content changes.
+        name: 'wnb-prerender',
+        apply: 'build',
+        closeBundle: {
+          order: 'pre',
+          sequential: true,
+          handler: () =>
+            void execFileSync('npx', ['tsx', 'scripts/prerender.tsx'], {
+              stdio: 'inherit',
+              env: { ...process.env, WNB_OUT_DIR: outDir, VITE_NATIVE: native ? '1' : '' },
+            }),
+        },
       },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
-        globIgnores: ['og.png'],
-        // Any /word.word.word opens the (cached) app shell, so lists work offline.
-        navigateFallback: '/list.html',
-        navigateFallbackAllowlist: [/^\/[a-z]+\.[a-z]+\.[a-z]+\/?$/i, /^\/share-target\/?(?:\?.*)?$/],
-        // Any other page that isn't precached: go to the network, and show the offline page if that fails.
-        runtimeCaching: [
-          {
-            urlPattern: ({ request }) => request.mode === 'navigate',
-            handler: 'NetworkOnly',
-            options: { precacheFallback: { fallbackURL: '/offline.html' } },
+      VitePWA({
+        // The apps load from the device already; a service worker would only get in the way of updates.
+        disable: native,
+        // New versions wait for src/sw.ts to switch over when the page holds no unsaved input.
+        registerType: 'prompt',
+        integration: { closeBundleOrder: 'post' },
+        injectRegister: false,
+        manifest: {
+          name: 'We Need Bananas',
+          short_name: 'Bananas',
+          description: 'Shared shopping lists with no signup. Three words, one list, everyone in sync.',
+          start_url: '/',
+          scope: '/',
+          display: 'standalone',
+          background_color: '#fffbea',
+          theme_color: '#ffd23f',
+          icons: [
+            { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+            { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+            { src: '/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          ],
+          // Android: share text (say, a recipe's ingredients) into the installed app. The list app
+          // shell handles /share-target and asks which list it goes on.
+          share_target: {
+            action: '/share-target',
+            method: 'GET',
+            params: { title: 'title', text: 'text', url: 'url' },
           },
-        ],
-      },
-    }),
-  ],
-  test: {
-    // e2e/ is Playwright's; `npm run test:e2e` runs it.
-    include: ['tests/**/*.test.ts'],
-  },
-  build: {
-    rollupOptions: {
-      input: {
-        index: resolve(import.meta.dirname, 'index.html'),
-        list: resolve(import.meta.dirname, 'list.html'),
-        'how-it-works': resolve(import.meta.dirname, 'how-it-works.html'),
-        privacy: resolve(import.meta.dirname, 'privacy.html'),
-        404: resolve(import.meta.dirname, '404.html'),
-        offline: resolve(import.meta.dirname, 'offline.html'),
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+          // App-only code (see below) is never loaded on the web.
+          globIgnores: ['og.png', 'assets/native/**'],
+          // Any /word.word.word opens the (cached) app shell, so lists work offline.
+          navigateFallback: '/list.html',
+          navigateFallbackAllowlist: [/^\/[a-z]+\.[a-z]+\.[a-z]+\/?$/i, /^\/share-target\/?(?:\?.*)?$/],
+          // Any other page that isn't precached: go to the network, and show the offline page if that fails.
+          runtimeCaching: [
+            {
+              urlPattern: ({ request }) => request.mode === 'navigate',
+              handler: 'NetworkOnly',
+              options: { precacheFallback: { fallbackURL: '/offline.html' } },
+            },
+          ],
+        },
+      }),
+    ],
+    define: { __WNB_NATIVE__: JSON.stringify(native) },
+    test: {
+      // e2e/ is Playwright's; `npm run test:e2e` runs it.
+      include: ['tests/**/*.test.ts'],
+    },
+    build: {
+      outDir,
+      rollupOptions: {
+        output: {
+          // Code only the apps load sits behind `if (NATIVE)`, so the web build never imports it, but
+          // its chunks are still written out. Keep them apart so the service worker doesn't precache them.
+          chunkFileNames: (chunk) =>
+            chunk.moduleIds.length &&
+            chunk.moduleIds.every((id) =>
+              /[\\/](@capacitor|@capacitor-community)[\\/]|[\\/]src[\\/]native\.ts$/.test(id),
+            )
+              ? 'assets/native/[name]-[hash].js'
+              : 'assets/[name]-[hash].js',
+        },
+        input: {
+          index: resolve(import.meta.dirname, 'index.html'),
+          list: resolve(import.meta.dirname, 'list.html'),
+          'how-it-works': resolve(import.meta.dirname, 'how-it-works.html'),
+          privacy: resolve(import.meta.dirname, 'privacy.html'),
+          404: resolve(import.meta.dirname, '404.html'),
+          offline: resolve(import.meta.dirname, 'offline.html'),
+        },
       },
     },
-  },
+  }
 })

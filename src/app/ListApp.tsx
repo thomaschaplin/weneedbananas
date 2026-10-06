@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'preact/hooks'
 import { AISLE_BY_ID } from '../lib/aisles'
+import { listUrl, pageUrl } from '../lib/nav'
 import {
   addItems,
   allItems,
@@ -115,7 +116,7 @@ export function ListApp({
   // Just moved here from old words: offer to share the new ones straight away.
   useEffect(() => {
     if (location.hash !== '#moved') return
-    history.replaceState(null, '', location.pathname)
+    history.replaceState(null, '', location.pathname + location.search)
     setSheet('share')
     say('List moved. Share the new words with everyone you want to keep.')
   }, [])
@@ -126,7 +127,7 @@ export function ListApp({
       const next = await moveToNewWords()
       forgetList(slug)
       rememberList(next, todo)
-      location.replace(`/${next}#moved`)
+      location.replace(listUrl(next, '#moved'))
     } catch {
       setMoving(false)
       say("Couldn't move the list. Try again.")
@@ -144,7 +145,7 @@ export function ListApp({
   const removeMoved = async () => {
     await removeLocal()
     forgetList(slug)
-    location.href = '/'
+    location.href = pageUrl('')
   }
 
   useEffect(() => {
@@ -223,7 +224,7 @@ export function ListApp({
   return (
     <div class={`app${shopMode ? ' shop' : ''}`}>
       <header class="app-header">
-        <a href="/" class="home" aria-label="We Need Bananas home">
+        <a href={pageUrl('')} class="home" aria-label="We Need Bananas home">
           <BananaMark size={34} />
         </a>
         <button type="button" class="slug-btn" onClick={() => setSheet('share')} aria-label={`Share list ${slug}`}>
@@ -403,7 +404,7 @@ export function ListApp({
           onRemoveLocal={async () => {
             await removeLocal()
             forgetList(slug)
-            location.href = '/'
+            location.href = pageUrl('')
           }}
         />
       </Sheet>

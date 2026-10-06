@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks'
+import { listUrl } from '../lib/nav'
 import { parseSlugInput } from '../lib/slug'
 import { Page } from './Layout'
 import { StartJoin } from './StartJoin'
@@ -37,7 +38,7 @@ export function NotFound() {
         </p>
         {guess && (
           <p class="error-hint" role="status">
-            Looking for the list <a href={`/${guess}`}>{guess}</a>?
+            Looking for the list <a href={listUrl(guess)}>{guess}</a>?
           </p>
         )}
         <StartJoin />

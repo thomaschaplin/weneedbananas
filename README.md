@@ -33,6 +33,31 @@ npm run images     # regenerate icons and og.png
 npm run format     # Prettier (format:check to verify only)
 ```
 
+## iOS and Android apps
+
+The apps wrap this same web app with [Capacitor](https://capacitorjs.com) (`capacitor.config.ts`, `ios/`, `android/`). `npm run build:native` builds a copy into `dist-native/` with `vite build --mode native` and copies it into both projects (`cap sync`). Lists sync with the website and with each other exactly as browsers do.
+
+What's different in the apps (all behind `NATIVE` in `src/lib/nav.ts`, which Vite fixes at build time so none of it reaches the web bundle):
+
+- **URLs.** The apps serve files from the device, where `/lemon.fork.bulb` looks like a file with a `.bulb` extension, so a list is `/list.html?l=lemon.fork.bulb` and pages keep `.html`. Build every in-app link with `listUrl()` / `pageUrl()`. Shared links are still `https://weneedbananas.com/…` (`webListUrl()`).
+- **No service worker or analytics.** The app already has every file, and updates come from the stores.
+- **Native plugins** for the share sheet (`@capacitor/share`), keeping the screen on in Shop mode (`@capacitor-community/keep-awake`) and haptics (`@capacitor/haptics`), as app web views lack some of those web APIs.
+- **List links open the app** (`src/native.ts`): iOS universal links (`ios/App/App/App.entitlements`) and Android app links (intent filter in `AndroidManifest.xml`), verified against `public/.well-known/`.
+
+```sh
+npm run ios        # build, sync and open Xcode (needs a Mac)
+npm run android    # build, sync and open Android Studio
+npm run images     # also regenerates the app icons and splash screens from assets/
+```
+
+Before the first store release:
+
+1. Replace `TEAMID` in `public/.well-known/apple-app-site-association` with your Apple Developer Team ID, and pick that team under Signing & Capabilities in Xcode.
+2. Replace the fingerprint in `public/.well-known/assetlinks.json` with the SHA-256 of the Play app signing key (Play Console → Test and release → App integrity).
+3. Deploy the site so both files are live, then bump `versionCode`/`versionName` (`android/app/build.gradle`) and the version in Xcode for each release.
+
+The Android share-into-the-app flow (`/share-target`) is web-only for now; the apps don't register as a share target yet.
+
 ## Deploying
 
 Import the repo into Vercel (framework preset: Vite). `vercel.json` sets the build, rewrites and headers. Then add the `weneedbananas.com` domain.

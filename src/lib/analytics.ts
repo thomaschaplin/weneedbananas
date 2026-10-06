@@ -1,5 +1,6 @@
 import { inject } from '@vercel/analytics'
 import { injectSpeedInsights } from '@vercel/speed-insights'
+import { NATIVE } from './nav'
 
 const LIST_PATH = /^\/[^/?#]+\.[^/?#]+\.[^/?#]+\/?(?=[?#]|$)/
 
@@ -17,7 +18,8 @@ export function redactUrl(url: string, path?: string): string {
 }
 
 export function initAnalytics(path?: string): void {
-  if (!import.meta.env.PROD) return
+  // The apps have no Vercel endpoint to report to.
+  if (!import.meta.env.PROD || NATIVE) return
   inject({ framework: 'vite', beforeSend: (e) => ({ ...e, url: redactUrl(e.url, path) }) })
   injectSpeedInsights({ framework: 'vite', beforeSend: (e) => ({ ...e, url: redactUrl(e.url, path) }) })
 }

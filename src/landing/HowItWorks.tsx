@@ -1,3 +1,4 @@
+import { pageUrl } from '../lib/nav'
 import { Page } from './Layout'
 import { SyncDiagram } from './SyncDiagram'
 
@@ -129,7 +130,7 @@ export function HowItWorks() {
         </ul>
 
         <p>
-          <a class="btn btn-primary" href="/">
+          <a class="btn btn-primary" href={pageUrl('')}>
             Start a list
           </a>
         </p>

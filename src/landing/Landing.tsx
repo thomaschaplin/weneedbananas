@@ -1,4 +1,5 @@
 import { FAQ } from '../content'
+import { pageUrl } from '../lib/nav'
 import { Page } from './Layout'
 import { StartJoin } from './StartJoin'
 
@@ -85,7 +86,7 @@ export function Landing() {
           </li>
         </ol>
         <p>
-          <a href="/how-it-works">More on how sync works with no server →</a>
+          <a href={pageUrl('how-it-works')}>More on how sync works with no server →</a>
         </p>
       </section>
 

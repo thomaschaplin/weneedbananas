@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks'
+import { listUrl } from '../lib/nav'
 import { generateSlug, parseSlugInput } from '../lib/slug'
 import { recentLists, type RecentList } from '../lib/recent'
 import { recentHint } from '../lib/expiry'
@@ -12,14 +13,14 @@ export function StartJoin() {
   useEffect(() => setRecent(recentLists()), [])
 
   const start = () => {
-    location.href = `/${generateSlug()}`
+    location.href = listUrl(generateSlug())
   }
 
   const join = (e: Event) => {
     e.preventDefault()
     const r = parseSlugInput(value)
     if (r.ok) {
-      location.href = `/${r.slug}`
+      location.href = listUrl(r.slug)
       return
     }
     if (r.reason === 'count') {
@@ -64,11 +65,11 @@ export function StartJoin() {
       </form>
       {error && (
         <p class="join-error" role="alert">
-          {error.text} {error.fix && <a href={`/${error.fix}`}>Yes, open it</a>}
+          {error.text} {error.fix && <a href={listUrl(error.fix)}>Yes, open it</a>}
           {error.raw && (
             <>
               {error.fix ? ' · ' : ''}
-              <a href={`/${error.raw}`}>Open "{error.raw}" anyway</a>
+              <a href={listUrl(error.raw)}>Open "{error.raw}" anyway</a>
             </>
           )}
         </p>
@@ -82,7 +83,7 @@ export function StartJoin() {
               const hint = recentHint(r.openedAt, Date.now())
               return (
                 <li key={r.slug}>
-                  <a href={`/${r.slug}`}>
+                  <a href={listUrl(r.slug)}>
                     <span class="slug">{r.slug}</span>
                     <span class="muted">{r.todo ? `${r.todo} to get` : 'all done'}</span>
                     {hint && <span class="recent-hint">{hint}</span>}

@@ -1,4 +1,5 @@
 import { registerSW as register } from 'virtual:pwa-register'
+import { NATIVE } from './lib/nav'
 
 const UPDATE_INTERVAL = 60 * 60 * 1000
 const TEXT_FIELDS = 'input:not([type=checkbox],[type=radio],[type=button],[type=submit],[type=hidden]), textarea'
@@ -16,6 +17,11 @@ export function isIdle(doc: Document = document): boolean {
 }
 
 export function registerSW(): void {
+  // The apps load from files on the device and update through the app stores.
+  if (NATIVE) {
+    void import('./native').then((m) => m.initNative())
+    return
+  }
   if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return
   // A new version waits until it's safe to switch: right away if the page is idle, otherwise when
   // the app is next idle and hidden or shown, or when the "New version ready" pill is tapped.

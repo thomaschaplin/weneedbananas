@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.weneedbananas.app"],
+        "components": [
+          { "/": "/assets/*", "exclude": true },
+          { "/": "/?*.?*.?*", "comment": "A list: /word.word.word" }
+        ]
+      }
+    ]
+  }
+}

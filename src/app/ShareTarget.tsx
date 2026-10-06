@@ -3,12 +3,13 @@ import { BananaMark } from '../landing/Logo'
 import { toAddBarText } from '../lib/export'
 import { parseMany } from '../lib/parse'
 import { recentLists } from '../lib/recent'
+import { listUrl, pageUrl } from '../lib/nav'
 import { generateSlug } from '../lib/slug'
 
 /** Where to open a list with shared text waiting in its add bar. The hash never reaches a server or analytics. */
 export function listHref(slug: string, text: string): string {
   const line = toAddBarText(text)
-  return line ? `/${slug}#add=${encodeURIComponent(line)}` : `/${slug}`
+  return listUrl(slug, line ? `#add=${encodeURIComponent(line)}` : '')
 }
 
 /** Landing page for the Web Share Target: pick which list the shared text goes on. */
@@ -19,7 +20,7 @@ export function ShareTarget({ text }: { text: string }) {
   return (
     // The shared text lives only in memory, so a reload would lose it.
     <main class="share-target" data-unsaved={count ? '' : undefined}>
-      <a href="/" class="home" aria-label="We Need Bananas home">
+      <a href={pageUrl('')} class="home" aria-label="We Need Bananas home">
         <BananaMark size={34} />
       </a>
       {count ? (

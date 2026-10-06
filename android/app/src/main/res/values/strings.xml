@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">We Need Bananas</string>
+    <string name="title_activity_main">We Need Bananas</string>
+    <string name="package_name">com.weneedbananas.app</string>
+    <string name="custom_url_scheme">com.weneedbananas.app</string>
+</resources>

@@ -2,6 +2,8 @@ import qrcode from 'qrcode-generator'
 import { useMemo, useState } from 'preact/hooks'
 import type { Item } from '../lib/doc'
 import { listAsText } from '../lib/export'
+import { webListUrl } from '../lib/nav'
+import { canShare, share as openShare } from '../lib/share'
 
 export function ShareContent({
   slug,
@@ -15,7 +17,7 @@ export function ShareContent({
   /** The list has a password, which is never part of the link. */
   locked?: boolean
 }) {
-  const url = `https://weneedbananas.com/${slug}`
+  const url = webListUrl(slug)
   const [copied, setCopied] = useState(false)
   const [copiedText, setCopiedText] = useState(false)
   const text = () => listAsText(slug, items ?? [], order ?? [], url)
@@ -38,7 +40,7 @@ export function ShareContent({
 
   const share = async () => {
     try {
-      await navigator.share({ title: 'Our shopping list', text: `Our shopping list: ${slug}`, url })
+      await openShare({ title: 'Our shopping list', text: `Our shopping list: ${slug}`, url })
     } catch {
       /* cancelled */
     }
@@ -56,7 +58,7 @@ export function ShareContent({
 
   const shareText = async () => {
     try {
-      await navigator.share({ text: text() })
+      await openShare({ text: text() })
     } catch {
       /* cancelled */
     }
@@ -70,7 +72,7 @@ export function ShareContent({
         ))}
       </p>
       <div class="share-actions">
-        {'share' in navigator && (
+        {canShare() && (
           <button type="button" class="btn btn-primary" onClick={share}>
             Send link
           </button>
@@ -98,7 +100,7 @@ export function ShareContent({
             <button type="button" class="btn" onClick={copyText}>
               {copiedText ? 'Copied ✓' : 'Copy items as text'}
             </button>
-            {'share' in navigator && (
+            {canShare() && (
               <button type="button" class="btn" onClick={shareText}>
                 Send items as text
               </button>
