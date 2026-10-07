@@ -1,6 +1,7 @@
 import { normalizePassword, type Lock } from './crypto'
 import type { LockInfo, PasskeyEntry } from './doc'
 import { tryPassword } from './lock'
+import { NATIVE } from './nav'
 
 // A passkey can't log anyone in here, as there is no server to log in to. Instead its PRF extension turns a
 // fixed input into a secret only that passkey can produce again, and that secret seals the list's password.
@@ -71,6 +72,9 @@ export async function unseal(
 
 /** Whether this browser can probably use a passkey's PRF extension. Only a real attempt says for sure. */
 export async function passkeysSupported(): Promise<boolean> {
+  // App web views either lack WebAuthn or only allow it for an associated web domain, and a passkey
+  // made from the app's local origin wouldn't be the website's. The password still works there.
+  if (NATIVE) return false
   if (typeof PublicKeyCredential === 'undefined' || !navigator.credentials) return false
   const caps = (PublicKeyCredential as unknown as { getClientCapabilities?: () => Promise<Record<string, boolean>> })
     .getClientCapabilities
