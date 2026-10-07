@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import { clearDocument } from 'y-indexeddb'
 import type { Lock } from '../lib/crypto'
-import { isRetired, lockInfo } from '../lib/doc'
+import { addPasskey, isRetired, lockInfo, passkeys, removePasskeys, type PasskeyEntry } from '../lib/doc'
 import {
   changePassword,
   forgetPassword,
@@ -13,6 +13,7 @@ import {
   tryPassword,
 } from '../lib/lock'
 import { storeName } from '../lib/move'
+import { createPasskey, passkeysSupported, unlockWithPasskey } from '../lib/passkey'
 import { ListApp, type PasswordControls } from './ListApp'
 import type { ToastData } from './Toast'
 import { PasswordPrompt, type PromptReason } from './Password'
@@ -33,6 +34,9 @@ type View =
 export function ListRoute({ slug, prefill }: { slug: string; prefill?: string }) {
   const open = useList(slug)
   const info = useMemo(() => lockInfo(open.ld), [open.version])
+  const keys = useMemo(() => passkeys(open.ld), [open.version])
+  const [canPasskey, setCanPasskey] = useState(false)
+  useEffect(() => void passkeysSupported().then(setCanPasskey), [])
   const [view, setView] = useState<View>({ kind: 'open' })
   const [working, setWorking] = useState<string | undefined>()
   // While the password is being added, changed or removed, the list's lock moves step by step; hold the page
@@ -90,7 +94,25 @@ export function ListRoute({ slug, prefill }: { slug: string; prefill?: string })
     return true
   }
 
-  if (view.kind === 'prompt' && info) return <PasswordPrompt slug={slug} reason={view.reason} onSubmit={unlock} />
+  const unlockPasskey = async (): Promise<boolean> => {
+    if (!info) return true
+    const lock = await unlockWithPasskey(slug, info, keys)
+    if (!lock) return false
+    savePassword(slug, lock.password)
+    setView({ kind: 'locked', lock, key: info.key })
+    return true
+  }
+
+  if (view.kind === 'prompt' && info) {
+    return (
+      <PasswordPrompt
+        slug={slug}
+        reason={view.reason}
+        onSubmit={unlock}
+        onPasskey={canPasskey && keys.size > 0 ? unlockPasskey : undefined}
+      />
+    )
+  }
   if (view.kind === 'checking') return null
   if (view.kind === 'locked' && info) {
     return (
@@ -100,6 +122,7 @@ export function ListRoute({ slug, prefill }: { slug: string; prefill?: string })
         prefill={prefill}
         open={open}
         lock={view.lock}
+        passkeys={canPasskey ? keys : undefined}
         working={working}
         run={run}
         {...notices}
@@ -135,6 +158,7 @@ function LockedList({
   prefill,
   open,
   lock,
+  passkeys: keys,
   working,
   run,
   onReenter,
@@ -146,6 +170,8 @@ function LockedList({
   prefill?: string
   open: ListHandle
   lock: Lock
+  /** The passkeys that unlock the list, if this browser can use them. */
+  passkeys?: Map<string, PasskeyEntry>
   working?: string
   run: (label: string, work: () => Promise<void>) => Promise<void>
   onReenter: () => void
@@ -183,6 +209,18 @@ function LockedList({
       forgetPassword(slug)
       await locked.removeLocal(true)
       onLocked()
+    },
+    passkeys: keys && {
+      count: keys.size,
+      add: async () => {
+        const { id, entry } = await createPasskey(slug, lock)
+        addPasskey(open.ld, id, entry)
+        await open.flush()
+      },
+      removeAll: async () => {
+        removePasskeys(open.ld)
+        await open.flush()
+      },
     },
   }
 
