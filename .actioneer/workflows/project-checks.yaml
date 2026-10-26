@@ -1,0 +1,44 @@
+# Checks that runner pods clone this project's private repository without
+# leaving its git credentials where steps can read them.
+name: Project checks
+description: Credentials stay out of warm and cold runner pods' steps.
+
+on:
+  manual: {}
+
+jobs:
+  warm-no-credentials:
+    # Default image: a warm pod from the pool.
+    steps:
+      - name: cloned this repository
+        run: |
+          echo "pod: $(hostname)"
+          test -f package.json && grep -q '"name"' package.json
+          git log -1 --format='%h %s'
+      - name: no credentials visible
+        run: &check |
+          found=0
+          if env | grep -E 'gh[opsu]_[A-Za-z0-9]{20,}|github_pat_' >/dev/null; then echo "token in environment"; found=1; fi
+          if git config --show-origin --get-regexp '.*' 2>/dev/null | grep -E 'gh[opsu]_|github_pat_|x-access-token' ; then echo "token in git config"; found=1; fi
+          for d in /tmp /var/tmp "$HOME" /run/secrets /var/run/secrets /etc/git-credentials "$PWD/.git"; do
+            [ -e "$d" ] || continue
+            if grep -rIlE 'gh[opsu]_[A-Za-z0-9]{20,}|github_pat_' "$d" 2>/dev/null | head -5 | grep . ; then echo "token in files under $d"; found=1; fi
+          done
+          ls -la /var/run/secrets 2>/dev/null || echo "no /var/run/secrets"
+          git remote -v
+          test "$found" = 0 && echo "no credentials visible to steps"
+
+  cold-no-credentials:
+    # A container image, so a cold pod whose init container clones.
+    container: alpine/git:2.45.2
+    steps:
+      - name: cloned this repository
+        run: |
+          echo "pod: $(hostname)"
+          test -f package.json
+          git config --global --add safe.directory "$PWD"
+          git log -1 --format='%h %s'
+      - name: no credentials visible
+        run: *check
+      - name: hold the pod for inspection
+        run: sleep 25
