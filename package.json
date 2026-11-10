@@ -4,6 +4,16 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Shared shopping lists with no signup and no server. Open a three-word list, share the words, shop together.",
+  "license": "MIT",
+  "author": "Thomas Chaplin",
+  "homepage": "https://weneedbananas.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thomaschaplin/weneedbananas.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thomaschaplin/weneedbananas/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

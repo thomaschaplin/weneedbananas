@@ -33,6 +33,7 @@ const app = {
   operatingSystem: 'Any (runs in the browser)',
   browserRequirements: 'Requires JavaScript and a modern browser with WebRTC.',
   isAccessibleForFree: true,
+  sameAs: [SITE.repo],
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'GBP' },
   featureList: [
     'Shared shopping list with no signup or email',
