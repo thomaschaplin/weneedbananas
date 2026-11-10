@@ -104,14 +104,15 @@ const prfFirst = (cred: PublicKeyCredential): Uint8Array<ArrayBuffer> | null => 
 
 const challenge = () => crypto.getRandomValues(new Uint8Array(32))
 
+/** Use a passkey: the one with id `only`, or any this site has, picked by the person. */
 async function getSecret(
   input: Uint8Array,
-  allow: string[],
+  only?: string,
 ): Promise<{ id: string; secret: Uint8Array<ArrayBuffer> } | null> {
   const cred = (await navigator.credentials.get({
     publicKey: {
       challenge: challenge(),
-      allowCredentials: allow.map((id) => ({ type: 'public-key', id: unb64url(id) })),
+      allowCredentials: only ? [{ type: 'public-key', id: unb64url(only) }] : [],
       userVerification: 'required',
       extensions: { prf: { eval: { first: input } } } as AuthenticationExtensionsClientInputs,
     },
@@ -150,7 +151,7 @@ export async function createPasskey(slug: string, lock: Lock): Promise<{ id: str
   if (!secret) {
     // Some authenticators only say PRF works when the passkey is made, and give the secret when it's next used.
     if ((cred.getClientExtensionResults() as PrfResults).prf?.enabled === false) throw new NoPrfError()
-    secret = (await getSecret(input, [id]))?.secret ?? null
+    secret = (await getSecret(input, id))?.secret ?? null
     if (!secret) throw new NoPrfError()
   }
   return { id, entry: await seal(slug, lock, secret) }
@@ -158,14 +159,18 @@ export async function createPasskey(slug: string, lock: Lock): Promise<{ id: str
 
 /**
  * Open a password list with one of the passkeys added to it. Resolves the lock, or null if the passkey picked
- * doesn't open the list (e.g. its sealed password has been replaced).
+ * doesn't open the list (another list's, or its sealed password has been replaced).
+ *
+ * The passkeys aren't listed in the request. The list holds everyone's, and password managers like 1Password
+ * stop at an id they don't hold and say the passkey can't be used. Unlisted, each person is offered the
+ * passkeys they have for this site, named after each list's words, and the one picked is looked up here.
  */
 export async function unlockWithPasskey(
   slug: string,
   info: LockInfo,
   entries: Map<string, PasskeyEntry>,
 ): Promise<Lock | null> {
-  const got = await getSecret(prfInput(slug, info.salt), [...entries.keys()])
+  const got = await getSecret(prfInput(slug, info.salt))
   const entry = got && entries.get(got.id)
   if (!got || !entry) return null
   const password = await unseal(slug, entry, got.secret)
