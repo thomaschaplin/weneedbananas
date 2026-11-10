@@ -4,6 +4,16 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Shared shopping lists with no signup and no server. Open a three-word list, share the words, shop together.",
+  "license": "MIT",
+  "author": "Thomas Chaplin",
+  "homepage": "https://weneedbananas.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thomaschaplin/weneedbananas.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thomaschaplin/weneedbananas/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -18,25 +28,25 @@
   "dependencies": {
     "@noble/secp256k1": "^3.2.0",
     "@vercel/analytics": "^2.0.1",
-    "@vercel/speed-insights": "^2.0.0",
-    "preact": "^10.29.8",
+    "@vercel/speed-insights": "^2.1.0",
+    "preact": "^11.2.0",
     "qrcode-generator": "^2.0.4",
-    "trystero": "^0.25.4",
+    "trystero": "^0.26.0",
     "y-indexeddb": "^9.0.12",
     "yjs": "^13.6.33"
   },
   "devDependencies": {
-    "@playwright/test": "^1.56.1",
+    "@playwright/test": "^1.65.0",
     "@preact/preset-vite": "^2.10.6",
-    "@types/node": "^26.6.3",
-    "fake-indexeddb": "^6.2.5",
-    "playwright": "^1.56.1",
-    "preact-render-to-string": "^6.7.0",
-    "prettier": "^3.9.9",
+    "@types/node": "^26.6.6",
+    "fake-indexeddb": "^6.2.8",
+    "playwright": "^1.65.0",
+    "preact-render-to-string": "^6.8.2",
+    "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vite": "^8.3.1",
-    "vite-plugin-pwa": "^1.3.0",
-    "vitest": "^5.0.2"
+    "vite": "^8.3.7",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.1.0"
   }
 }

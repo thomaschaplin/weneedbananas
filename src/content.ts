@@ -1,5 +1,6 @@
 export const SITE = {
   url: 'https://weneedbananas.com',
+  repo: 'https://github.com/thomaschaplin/weneedbananas',
   name: 'We Need Bananas',
   tagline: 'The shared shopping list you open with three words.',
   description:

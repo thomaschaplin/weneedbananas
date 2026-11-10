@@ -301,6 +301,28 @@ button {
   margin: -6px -10px -6px -4px;
 }
 
+.site-header .github-link {
+  margin: -6px -14px -6px -4px;
+}
+
+.github-mark {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  flex: none;
+}
+
+.footer-github {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-github .github-mark {
+  width: 16px;
+  height: 16px;
+}
+
 .site-header nav a {
   text-decoration: none;
   color: var(--muted);
@@ -887,7 +909,8 @@ h1 {
 
 .site-footer nav {
   display: flex;
-  gap: 18px;
+  flex-wrap: wrap;
+  gap: 8px 18px;
 }
 
 /* ---------- list app ---------- */

@@ -1,6 +1,10 @@
 # weneedbananas
 
-A shared shopping list at **weneedbananas.com** with no signup and no backend. A list is three random words (`weneedbananas.com/lemon.fork.bulb`); anyone with the words is on the list.
+[![CI](https://github.com/thomaschaplin/weneedbananas/actions/workflows/ci.yml/badge.svg)](https://github.com/thomaschaplin/weneedbananas/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+[![We Need Bananas: the shopping list you share with three words. No signup, sorted by aisle, works offline.](public/og.png)](https://weneedbananas.com)
+
+A shared shopping list at **[weneedbananas.com](https://weneedbananas.com)** with no signup and no backend. A list is three random words (`weneedbananas.com/lemon.fork.bulb`); anyone with the words is on the list.
 
 ## How it works
 
@@ -37,3 +41,11 @@ npm run format     # Prettier (format:check to verify only)
 ## Deploying
 
 Import the repo into Vercel (framework preset: Vite). `vercel.json` sets the build, rewrites and headers. Then add the `weneedbananas.com` domain.
+
+## Contributing
+
+Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md). Please report security problems privately, as described in [SECURITY.md](SECURITY.md).
+
+## License
+
+[MIT](LICENSE)

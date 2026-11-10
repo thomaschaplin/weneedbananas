@@ -30,3 +30,4 @@
 - [Home](https://weneedbananas.com/): start or join a list, features and FAQ
 - [How it works](https://weneedbananas.com/how-it-works): how sync works without a server
 - [Privacy](https://weneedbananas.com/privacy): what is and isn't collected
+- [Source code](https://github.com/thomaschaplin/weneedbananas): open source under the MIT License
