@@ -17,7 +17,10 @@ export interface SyncStatus {
 
 type Listener = (s: SyncStatus) => void
 
-const APP_ID = 'weneedbananas.com'
+// Part of every room's signaling topic and handshake key. Change it whenever trystero's wire protocol changes
+// (0.26 drops peers that send 0.25 frames), so devices still running a cached older build never meet newer ones
+// and churn through failed connections; between versions, the encrypted mailbox carries changes instead.
+const APP_ID = 'weneedbananas.com/p2p-v2'
 
 function bytes(data: unknown): Uint8Array {
   if (data instanceof Uint8Array) return data

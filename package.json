@@ -31,7 +31,7 @@
     "@vercel/speed-insights": "^2.1.0",
     "preact": "^11.2.0",
     "qrcode-generator": "^2.0.4",
-    "trystero": "^0.25.4",
+    "trystero": "^0.26.0",
     "y-indexeddb": "^9.0.12",
     "yjs": "^13.6.33"
   },
