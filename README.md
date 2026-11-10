@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/thomaschaplin/weneedbananas/actions/workflows/ci.yml/badge.svg)](https://github.com/thomaschaplin/weneedbananas/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+[![We Need Bananas: the shopping list you share with three words. No signup, sorted by aisle, works offline.](public/og.png)](https://weneedbananas.com)
+
 A shared shopping list at **[weneedbananas.com](https://weneedbananas.com)** with no signup and no backend. A list is three random words (`weneedbananas.com/lemon.fork.bulb`); anyone with the words is on the list.
 
 ## How it works
